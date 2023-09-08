@@ -1,8 +1,8 @@
 import streamlit as st 
 from streamlit.config import get_config_options
-from translate import process_text
-from scraper import extract_text_from_html
-from typing import Literal
+from collector.translate import process_text
+from collector.scraper import extract_text_from_html
+from typing import Union
 MAX_LENGTH = 1024
 
 
@@ -46,12 +46,18 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 
-#Start of Streamlit app
 st.title("Xinhua News Translation to Google Sheets")  
 st.write("Translate important Xinhua News headlines into your language and update a Google Sheet.") 
 
-#Dropdown for selecting target language
-language = st.selectbox("Target Language", ["English", "Spanish", "French", "German", "Cantonese"])  
+language = st.selectbox("Target Language", ["English", "Spanish", "French", "German", "Cantonese"], index=4, placeholder="To")  
+if not language:
+    language = "English"
+
+source_language = st.selectbox("Source Language", ["English", "Spanish", "French", "German", "Cantonese"], index=4, placeholder="From")
+
+if not source_language:
+    source_lanaguage = "Cantonese"
+    
 
 language_map = {
     "English": "eng",
@@ -62,6 +68,27 @@ language_map = {
 }
 
 
+def display_articles(articles: Union[str, str], main_title: str)-> None:
+    ticker = 0
+    sort = {}
+    header = {}
+    for article in articles:
+        head, article = article.split("\n\n")
+        ticker += 1
+        if ticker >= 4:
+            ticker = 3
+        sort[ticker] = article
+        header[ticker] = head
+    
+    st.header(main_title)
+    col1, col2, col3 = st.columns(3)
+    st.header(header[1])
+    col1.write(sort[1])
+    st.header(header[2])
+    col2.write(sort[2])
+    st.header(header[3])
+    col3.write(sort[3])
+
 with st.sidebar:
     url = st.text_area("Input url", "", height=100)
     if not url.startswith("http"):
@@ -69,30 +96,29 @@ with st.sidebar:
     if not url:
         raise ValueError("No URL provided.")
 
-#Button to initiate translation and update Google Sheet via webhook
-if st.button("Translate & Update"):  
-    # Fetch news headlines from Xinhua
-    headlines = extract_text_from_html(html_content=url)
+    headlines = ""
+    if st.button("Translate & Update"):  
+        headlines = extract_text_from_html(html_content=url)
     
-    if not headlines:
-        raise ValueError("No headlines found.")
+        if not headlines:
+            raise ValueError("No headlines found.")
     
-    # Translate headlines
-    translated_headlines = translate_headlines(headlines, language=language, target_lang=language_map[language])
-    
-st.column_config(width=3)
-    with st.column(3):
-        st.write("")
-    
-    
-    # Display translated headlines on the app for review
-    st.write(f"Translated Headlines in {language}:")  environment
-    st.write(translated_headlines)  
 
-    response = process_text(input_text=headlines, source_language=language, target_language=language_map[language])    
+    translated_headlines = process_text(input_text=headlines, source_language=language, target_language=language_map[language])    
 
-    if response == "Success":  
-        st.write("Translated headlines updated in Google Sheet.")  
-    else:      
-        st.write("Failed to update Google Sheet. Please try again.")  
+    if not translated_headlines:
+        raise ValueError("No translated headlines found.")
+    display_articles(
+        articles=translated_headlines,
+        main_title="Translated headlines"
+    )
+        
 
+
+
+
+            
+            
+            
+        
+        

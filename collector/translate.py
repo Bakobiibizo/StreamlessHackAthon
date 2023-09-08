@@ -1,6 +1,5 @@
-import numpy as np
 import torch
-from src.seamless_communication.models.inference.translator import Translator, load_unity_model, StringLike
+from src.seamless_communication.models.inference.translator import Translator, load_unity_model
 
 device = torch.device("cpu")
 
@@ -11,14 +10,14 @@ def process_text(
     input_text: str,
     source_language: str,
     target_language: str
-) -> StringLike:
+) -> str:
     translated_text, wav, sr = translator.predict(
         input=input_text,
         task_str="S2ST",
         tgt_lang=target_language,
         src_lang=source_language,
     )
-    return translated_text
+    return str(translated_text)
     
 if __name__ == "__main__":
-    #print(process_text("Hello", "en", "fr"))
+    process_text(input_text="hello world", source_language="English", target_language="French")

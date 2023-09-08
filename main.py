@@ -1,5 +1,5 @@
 from src.seamless_communication.models.inference import translator
-from collector import scraper, parser, translate, app
+from collector import scraper, parser, translate
 from demo import app as demo
 import subprocess
 __all__ = ["translator", "scraper", "parser", "translate", "app", "demo"]

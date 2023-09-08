@@ -1,9 +1,7 @@
 # Implementing the extract_text_from_html function with the suggested changes
 from bs4 import BeautifulSoup
 from loguru import logger
-import json
 import warnings
-from typing import List
 from bs4 import BeautifulSoup, SoupStrainer
 
 
@@ -32,7 +30,7 @@ def extract_text_from_html(
 
             # Add paragraphs to the text content
             for paragraph in paragraphs:
-                text_content += f"{paragraph}/n"
+                text_content += f"\n\n{paragraph}\n"
 
             # Log the extractions
             with open("src/paragraphs.txt", "w", encoding="utf-8") as file:

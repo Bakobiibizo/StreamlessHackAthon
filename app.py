@@ -1,8 +1,7 @@
+import json
+import requests
 import streamlit as st
-from fastapi import requests
-from typing import Union
-
-MAX_LENGTH = 1024
+from typing import Union, Optional
 
 
 def set_page_config():
@@ -88,9 +87,19 @@ def display_articles(articles: str) -> None:
         col3.write(tick[3]["article"])
 
 
-def request_headlines(url, headline_url: str):
-    response = requests.get(url, body={"url": headline_url})
-    return response.text
+def request_headlines(translate_url: Optional[str], headline_url: str):
+    if not translate_url:
+        raise ValueError("No translation URL provided.")
+    url = "http://localhost:8000/translate"
+    body = {
+        "input_text": headline_url,
+        "source_language": language_map[source_language],
+        "target_language": language_map[language],
+    }
+    response = requests.post(url=url, json=body)
+    resp = json.loads(response.content)
+    print(resp["message"])
+    return resp["message"]
 
 
 with st.sidebar:
@@ -102,8 +111,9 @@ with st.sidebar:
 
     translated_headlines = ""
     if st.button("Translate & Update"):
-        translated_headlines = request_headlines(url, headline_url=url)
-        if not translated_headlines:
+        if translated_headlines := request_headlines(
+            translate_url=url, headline_url=url
+        ):
+            display_articles(articles=translated_headlines)
+        else:
             raise ValueError("No headlines found.")
-
-    display_articles(articles=translated_headlines)

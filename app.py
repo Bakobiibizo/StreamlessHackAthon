@@ -1,37 +1,24 @@
-import streamlit as st 
-from streamlit.config import get_config_options
-from collector.translate import process_text
-from collector.scraper import extract_text_from_html
+import streamlit as st
+from fastapi import requests
 from typing import Union
+
 MAX_LENGTH = 1024
 
 
-def translate_headlines(headlines: str, language: str, target_lang: str="eng"):
-    translated_headlines = {}
-    translation = ""
-    for headline in headlines:
-        if len(headline) > MAX_LENGTH:
-            headline = headline[:MAX_LENGTH]
-            translation = process_text(input_text=headlines, source_language=language, target_language=target_lang)
-            for headline in translation.split("\n")[0:1]:
-                translated_headlines[headline] = headline
-        translated_headlines[headline] = translation
-    return translated_headlines
+def set_page_config():
+    st.set_page_config(
+        page_title="NewsLingo - Multi Language Site Scraper",
+        page_icon="🌎",
+        layout="centered",
+    )
 
 
-config = get_config_options(force_reparse=True, options_from_flags={
-    "page_title": "Multi Language Site Scraper",
-    "page_icon": "🌎",
-    "layout": "centered",
-    "initial_sidebar_state": "expanded"
-})
+st.header = "NewsLingo - Multi Language Site Scraper"
 
 
-def set_page_config(config):
-    st.set_page_config(config)
-    
 #  Unsupported, may break if the app changes. adjust the style of side bar to keep the page options at the top
-st.markdown("""
+st.markdown(
+    """
 <style>
 .css-1oe5cao {
     max-height: 10vh;
@@ -43,51 +30,68 @@ st.markdown("""
     padding-bottom: 0rem;
 }
 </style>
-""", unsafe_allow_html=True)
+""",
+    unsafe_allow_html=True,
+)
 
 
-st.title("Xinhua News Translation to Google Sheets")  
-st.write("Translate important Xinhua News headlines into your language and update a Google Sheet.") 
+st.title("Xinhua News Translation to Google Sheets")
+st.write(
+    "Translate important Xinhua News headlines into your language and update a Google Sheet."
+)
 
-language = st.selectbox("Target Language", ["English", "Spanish", "French", "German", "Cantonese"], index=4, placeholder="To")  
-if not language:
-    language = "English"
+language = (
+    st.selectbox(
+        "Target Language",
+        ["English", "Spanish", "French", "German", "Cantonese"],
+        index=4,
+        placeholder="To",
+    )
+    or "English"
+)
 
-source_language = st.selectbox("Source Language", ["English", "Spanish", "French", "German", "Cantonese"], index=4, placeholder="From")
-
-if not source_language:
-    source_lanaguage = "Cantonese"
-    
+source_language = (
+    st.selectbox(
+        "Source Language",
+        ["English", "Spanish", "French", "German", "Cantonese"],
+        index=4,
+        placeholder="From",
+    )
+    or "Cantonese"
+)
 
 language_map = {
     "English": "eng",
     "Spanish": "spa",
     "French": "fra",
     "German": "deu",
-    "Cantonese": "yue"
+    "Cantonese": "yue",
 }
 
 
-def display_articles(articles: Union[str, str], main_title: str)-> None:
+def display_articles(articles: str) -> None:
     ticker = 0
     sort = {}
-    header = {}
     for article in articles:
-        head, article = article.split("\n\n")
+        head, article = article.split("/n/n")
         ticker += 1
         if ticker >= 4:
             ticker = 3
-        sort[ticker] = article
-        header[ticker] = head
-    
-    st.header(main_title)
-    col1, col2, col3 = st.columns(3)
-    st.header(header[1])
-    col1.write(sort[1])
-    st.header(header[2])
-    col2.write(sort[2])
-    st.header(header[3])
-    col3.write(sort[3])
+        sort[ticker] = {article: head}
+    for tick in sort:
+        col1, col2, col3 = st.columns(3)
+        st.header(tick[1]["head"])
+        col1.write(tick[1]["article"])
+        st.header(tick[2]["head"])
+        col2.write(tick[2]["article"])
+        st.header(tick[3]["head"])
+        col3.write(tick[3]["article"])
+
+
+def request_headlines(url, headline_url: str):
+    response = requests.get(url, body={"url": headline_url})
+    return response.text
+
 
 with st.sidebar:
     url = st.text_area("Input url", "", height=100)
@@ -96,29 +100,10 @@ with st.sidebar:
     if not url:
         raise ValueError("No URL provided.")
 
-    headlines = ""
-    if st.button("Translate & Update"):  
-        headlines = extract_text_from_html(html_content=url)
-    
-        if not headlines:
+    translated_headlines = ""
+    if st.button("Translate & Update"):
+        translated_headlines = request_headlines(url, headline_url=url)
+        if not translated_headlines:
             raise ValueError("No headlines found.")
-    
 
-    translated_headlines = process_text(input_text=headlines, source_language=language, target_language=language_map[language])    
-
-    if not translated_headlines:
-        raise ValueError("No translated headlines found.")
-    display_articles(
-        articles=translated_headlines,
-        main_title="Translated headlines"
-    )
-        
-
-
-
-
-            
-            
-            
-        
-        
+    display_articles(articles=translated_headlines)

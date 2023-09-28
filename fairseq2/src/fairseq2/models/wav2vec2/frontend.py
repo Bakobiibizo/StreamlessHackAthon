@@ -69,16 +69,16 @@ class Wav2Vec2Frontend(TransformerFrontend):
 
         self.feature_dim = feature_dim
 
-        if feature_extractor is not None:
-            if feature_dim != feature_extractor.feature_dim:
-                raise ValueError(
-                    f"`feature_dim` of `feature_extractor` and `feature_dim` must be equal, but are {feature_extractor.feature_dim} and {feature_dim} instead."
-                )
-
-            self.feature_extractor = feature_extractor
-        else:
+        if feature_extractor is None:
             self.register_module("feature_extractor", None)
 
+        elif feature_dim != feature_extractor.feature_dim:
+            raise ValueError(
+                f"`feature_dim` of `feature_extractor` and `feature_dim` must be equal, but are {feature_extractor.feature_dim} and {feature_dim} instead."
+            )
+
+        else:
+            self.feature_extractor = feature_extractor
         self.post_extract_layer_norm = StandardLayerNorm(
             feature_dim, device=device, dtype=dtype
         )
@@ -95,16 +95,16 @@ class Wav2Vec2Frontend(TransformerFrontend):
         else:
             self.register_module("first_pass_dropout", None)
 
-        if pos_encoder is not None:
-            if pos_encoder.encoding_dim != model_dim:
-                raise ValueError(
-                    f"`encoding_dim` of `pos_encoder` and `model_dim` must be equal, but are {pos_encoder.encoding_dim} and {model_dim} instead."
-                )
-
-            self.pos_encoder = pos_encoder
-        else:
+        if pos_encoder is None:
             self.register_module("pos_encoder", None)
 
+        elif pos_encoder.encoding_dim != model_dim:
+            raise ValueError(
+                f"`encoding_dim` of `pos_encoder` and `model_dim` must be equal, but are {pos_encoder.encoding_dim} and {model_dim} instead."
+            )
+
+        else:
+            self.pos_encoder = pos_encoder
         if layer_norm:
             self.layer_norm = StandardLayerNorm(model_dim, device=device, dtype=dtype)
         else:
@@ -224,4 +224,4 @@ class Wav2Vec2Frontend(TransformerFrontend):
         """:meta private:"""
         s = super().extra_repr()
 
-        return s + f", feature_dim={self.feature_dim}"
+        return f"{s}, feature_dim={self.feature_dim}"

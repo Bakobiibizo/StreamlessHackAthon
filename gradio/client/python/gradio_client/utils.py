@@ -314,7 +314,7 @@ def download_tmp_copy_of_file(
 ) -> str:
     if dir is not None:
         os.makedirs(dir, exist_ok=True)
-    headers = {"Authorization": "Bearer " + hf_token} if hf_token else {}
+    headers = {"Authorization": f"Bearer {hf_token}"} if hf_token else {}
     directory = Path(dir or tempfile.gettempdir()) / secrets.token_hex(20)
     directory.mkdir(exist_ok=True, parents=True)
     file_path = directory / Path(url_path).name
@@ -389,7 +389,7 @@ def encode_url_or_file_to_base64(path: str | Path):
 
 def download_byte_stream(url: str, hf_token=None):
     arr = bytearray()
-    headers = {"Authorization": "Bearer " + hf_token} if hf_token else {}
+    headers = {"Authorization": f"Bearer {hf_token}"} if hf_token else {}
     with httpx.stream("GET", url, headers=headers) as r:
         for data in r.iter_bytes():
             arr += data
@@ -438,7 +438,7 @@ def decode_base64_to_file(
         filename = Path(file_path).name
         prefix = filename
         if "." in filename:
-            prefix = filename[0 : filename.index(".")]
+            prefix = filename[:filename.index(".")]
             extension = filename[filename.index(".") + 1 :]
 
     if prefix is not None:
@@ -450,10 +450,7 @@ def decode_base64_to_file(
         )
     else:
         file_obj = tempfile.NamedTemporaryFile(
-            delete=False,
-            prefix=prefix,
-            suffix="." + extension,
-            dir=directory,
+            delete=False, prefix=prefix, suffix=f".{extension}", dir=directory
         )
     file_obj.write(data)
     file_obj.flush()
@@ -546,10 +543,7 @@ def json_schema_to_python_type(schema: Any) -> str:
     """Convert the json schema into a python type hint"""
     type_ = get_type(schema)
     if type_ == {}:
-        if "json" in schema["description"]:
-            return "Dict[Any, Any]"
-        else:
-            return "Any"
+        return "Dict[Any, Any]" if "json" in schema["description"] else "Any"
     elif type_ == "null":
         return "None"
     elif type_ == "integer":
@@ -579,7 +573,6 @@ def json_schema_to_python_type(schema: Any) -> str:
         )
         return f"Dict({des})"
     elif type_ in ["oneOf", "anyOf"]:
-        desc = " | ".join([json_schema_to_python_type(i) for i in schema[type_]])
-        return desc
+        return " | ".join([json_schema_to_python_type(i) for i in schema[type_]])
     else:
         raise APIInfoParseError(f"Cannot parse schema {schema}")

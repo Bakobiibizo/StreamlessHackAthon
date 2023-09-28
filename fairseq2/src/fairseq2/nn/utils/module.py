@@ -107,7 +107,7 @@ def check_model_dim(module: Module) -> None:
         return model_dim if dim is None else dim
 
     for name, child in module.named_children():
-        if isinstance(child, ModuleList) or isinstance(child, Sequential):
+        if isinstance(child, (ModuleList, Sequential)):
             for subname, grandchild in child.named_children():
                 if (grandchild_model_dim := get_model_dim(grandchild)) != model_dim:
                     raise ValueError(

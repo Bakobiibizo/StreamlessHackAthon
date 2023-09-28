@@ -95,7 +95,7 @@ class Client:
         self.output_dir = output_dir
 
         if src.startswith("http://") or src.startswith("https://"):
-            _src = src if src.endswith("/") else src + "/"
+            _src = src if src.endswith("/") else f"{src}/"
         else:
             _src = self._space_name_to_src(src)
             if _src is None:
@@ -110,7 +110,6 @@ class Client:
                 print("Space is still building. Please wait...")
             while self._get_space_state() == SpaceStage.BUILDING:
                 time.sleep(2)  # so we don't get rate limited by the API
-                pass
         if state in utils.INVALID_RUNTIME:
             raise ValueError(
                 f"The current space is in the invalid state: {state}. "
@@ -251,10 +250,9 @@ class Client:
             )
         if verbose:
             print("")
-        client = cls(
+        return cls(
             space_id, hf_token=hf_token, max_workers=max_workers, verbose=verbose
         )
-        return client
 
     def _get_space_state(self):
         if not self.space_id:
@@ -465,16 +463,15 @@ class Client:
                 # When loading from json, the fn_indices are read as strings
                 # because json keys can only be strings
                 human_info += self._render_endpoints_info(int(fn_index), endpoint_info)
-        else:
-            if num_unnamed_endpoints > 0:
-                human_info += f"\nUnnamed API endpoints: {num_unnamed_endpoints}, to view, run Client.view_api(all_endpoints=True)\n"
+        elif num_unnamed_endpoints > 0:
+            human_info += f"\nUnnamed API endpoints: {num_unnamed_endpoints}, to view, run Client.view_api(all_endpoints=True)\n"
 
         if print_info:
             print(human_info)
-        if return_format == "str":
-            return human_info
-        elif return_format == "dict":
+        if return_format == "dict":
             return info
+        elif return_format == "str":
+            return human_info
 
     def reset_session(self) -> None:
         self.session_hash = str(uuid.uuid4())
@@ -488,7 +485,7 @@ class Client:
         parameter_names = [utils.sanitize_parameter_names(p) for p in parameter_names]
         rendered_parameters = ", ".join(parameter_names)
         if rendered_parameters:
-            rendered_parameters = rendered_parameters + ", "
+            rendered_parameters += ", "
         return_values = [p["label"] for p in endpoints_info["returns"]]
         return_values = [utils.sanitize_parameter_names(r) for r in return_values]
         rendered_return_values = ", ".join(return_values)
@@ -558,7 +555,7 @@ class Client:
                 config_api_name = d.get("api_name")
                 if config_api_name is None or config_api_name is False:
                     continue
-                if "/" + config_api_name == api_name:
+                if f"/{config_api_name}" == api_name:
                     inferred_fn_index = i
                     break
             else:
@@ -593,21 +590,20 @@ class Client:
         )
         if r.ok:
             return r.json()
-        else:  # to support older versions of Gradio
-            r = requests.get(self.src, headers=self.headers)
-            # some basic regex to extract the config
-            result = re.search(r"window.gradio_config = (.*?);[\s]*</script>", r.text)
-            try:
-                config = json.loads(result.group(1))  # type: ignore
-            except AttributeError as ae:
-                raise ValueError(
-                    f"Could not get Gradio config from: {self.src}"
-                ) from ae
-            if "allow_flagging" in config:
-                raise ValueError(
-                    "Gradio 2.x is not supported by this client. Please upgrade your Gradio app to Gradio 3.x or higher."
-                )
-            return config
+        r = requests.get(self.src, headers=self.headers)
+        # some basic regex to extract the config
+        result = re.search(r"window.gradio_config = (.*?);[\s]*</script>", r.text)
+        try:
+            config = json.loads(result.group(1))  # type: ignore
+        except AttributeError as ae:
+            raise ValueError(
+                f"Could not get Gradio config from: {self.src}"
+            ) from ae
+        if "allow_flagging" in config:
+            raise ValueError(
+                "Gradio 2.x is not supported by this client. Please upgrade your Gradio app to Gradio 3.x or higher."
+            )
+        return config
 
     def deploy_discord(
         self,
@@ -662,7 +658,7 @@ class Client:
         outputs = [
             inp for inp in fn.input_component_types if fn not in utils.SKIP_COMPONENTS
         ]
-        if not inputs == ["textbox"] and outputs == ["textbox"]:
+        if inputs != ["textbox"] and outputs == ["textbox"]:
             raise ValueError(
                 "Currently only api_names with a single textbox as input and output are supported. "
                 f"Received {inputs} and {outputs}"
@@ -711,8 +707,9 @@ class Client:
                 metadata={"tags": ["gradio-discord-bot"]},
             )
 
-        with open(str(Path(__file__).parent / "templates" / "discord_chat.py")) as f:
-            app = f.read()
+        app = Path(
+            str(Path(__file__).parent / "templates" / "discord_chat.py")
+        ).read_text()
         app = app.replace("<<app-src>>", self.src)
         app = app.replace("<<api-name>>", api_names[0][0])
         app = app.replace("<<command-name>>", api_names[0][1])
@@ -760,12 +757,14 @@ class Endpoint:
         self.dependency = dependency
         api_name = dependency.get("api_name")
         self.api_name: str | None = (
-            None if (api_name is None or api_name is False) else "/" + api_name
+            None if (api_name is None or api_name is False) else f"/{api_name}"
         )
         self.use_ws = self._use_websocket(self.dependency)
         self.input_component_types = []
         self.output_component_types = []
-        self.root_url = client.src + "/" if not client.src.endswith("/") else client.src
+        self.root_url = (
+            f"{client.src}/" if not client.src.endswith("/") else client.src
+        )
         self.is_continuous = dependency.get("types", {}).get("continuous", False)
         try:
             # Only a real API endpoint if backend_fn is True (so not just a frontend function), serializers are valid,
@@ -852,9 +851,7 @@ class Endpoint:
     def _predict_resolve(self, *data) -> Any:
         """Needed for gradio.load(), which has a slightly different signature for serializing/deserializing"""
         outputs = self.make_predict()(*data)
-        if len(self.dependency["outputs"]) == 1:
-            return outputs[0]
-        return outputs
+        return outputs[0] if len(self.dependency["outputs"]) == 1 else outputs
 
     def _upload(
         self, file_paths: list[str | list[str]]
@@ -959,25 +956,21 @@ class Endpoint:
         uploaded_files = self._upload(files)
         data = list(data)
         self._add_uploaded_files_to_data(uploaded_files, data)
-        o = tuple([s.serialize(d) for s, d in zip(self.serializers, data)])
-        return o
+        return tuple(s.serialize(d) for s, d in zip(self.serializers, data))
 
     def deserialize(self, *data) -> tuple:
         assert len(data) == len(
             self.deserializers
         ), f"Expected {len(self.deserializers)} outputs, got {len(data)}"
-        outputs = tuple(
-            [
-                s.deserialize(
-                    d,
-                    save_dir=self.client.output_dir,
-                    hf_token=self.client.hf_token,
-                    root_url=self.root_url,
-                )
-                for s, d in zip(self.deserializers, data)
-            ]
+        return tuple(
+            s.deserialize(
+                d,
+                save_dir=self.client.output_dir,
+                hf_token=self.client.hf_token,
+                root_url=self.root_url,
+            )
+            for s, d in zip(self.deserializers, data)
         )
-        return outputs
 
     def process_predictions(self, *predictions):
         if self.client.serialize:
@@ -1141,9 +1134,8 @@ class Job(Future):
         """
         if not self.communicator:
             return []
-        else:
-            with self.communicator.lock:
-                return self.communicator.job.outputs
+        with self.communicator.lock:
+            return self.communicator.job.outputs
 
     def status(self) -> StatusUpdate:
         """
@@ -1179,8 +1171,8 @@ class Job(Future):
                 progress_data=None,
             )
         if self.done():
-            if not self.future._exception:  # type: ignore
-                return StatusUpdate(
+            return (
+                StatusUpdate(
                     code=Status.FINISHED,
                     rank=0,
                     queue_size=None,
@@ -1189,8 +1181,8 @@ class Job(Future):
                     eta=None,
                     progress_data=None,
                 )
-            else:
-                return StatusUpdate(
+                if not self.future._exception
+                else StatusUpdate(
                     code=Status.FINISHED,
                     rank=0,
                     queue_size=None,
@@ -1199,26 +1191,25 @@ class Job(Future):
                     eta=None,
                     progress_data=None,
                 )
-        else:
-            if not self.communicator:
-                return StatusUpdate(
-                    code=Status.PROCESSING,
-                    rank=0,
-                    queue_size=None,
-                    success=None,
-                    time=time,
-                    eta=None,
-                    progress_data=None,
+            )
+        if not self.communicator:
+            return StatusUpdate(
+                code=Status.PROCESSING,
+                rank=0,
+                queue_size=None,
+                success=None,
+                time=time,
+                eta=None,
+                progress_data=None,
+            )
+        with self.communicator.lock:
+            eta = self.communicator.job.latest_status.eta
+            if self.verbose and self.space_id and eta and eta > 30:
+                print(
+                    f"Due to heavy traffic on this app, the prediction will take approximately {int(eta)} seconds."
+                    f"For faster predictions without waiting in queue, you may duplicate the space using: Client.duplicate({self.space_id})"
                 )
-            else:
-                with self.communicator.lock:
-                    eta = self.communicator.job.latest_status.eta
-                    if self.verbose and self.space_id and eta and eta > 30:
-                        print(
-                            f"Due to heavy traffic on this app, the prediction will take approximately {int(eta)} seconds."
-                            f"For faster predictions without waiting in queue, you may duplicate the space using: Client.duplicate({self.space_id})"
-                        )
-                    return self.communicator.job.latest_status
+            return self.communicator.job.latest_status
 
     def __getattr__(self, name):
         """Forwards any properties to the Future class."""

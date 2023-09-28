@@ -265,16 +265,16 @@ class StandardMultiheadAttention(MultiheadAttention):
         self.k_proj = k_proj
         self.v_proj = v_proj
 
-        if pos_encoder is not None:
-            if (head_dim := k_proj.output_dim // num_heads) != pos_encoder.encoding_dim:
-                raise ValueError(
-                    f"`encoding_dim` of `pos_encoder` and the size of the header key dimension must be equal, but are {pos_encoder.encoding_dim} and {head_dim} instead."
-                )
-
-            self.pos_encoder = pos_encoder
-        else:
+        if pos_encoder is None:
             self.register_module("pos_encoder", None)
 
+        elif (head_dim := k_proj.output_dim // num_heads) != pos_encoder.encoding_dim:
+            raise ValueError(
+                f"`encoding_dim` of `pos_encoder` and the size of the header key dimension must be equal, but are {pos_encoder.encoding_dim} and {head_dim} instead."
+            )
+
+        else:
+            self.pos_encoder = pos_encoder
         if add_bias_kv:
             bias_k_shp = (num_heads, 1, k_proj.output_dim // num_heads)
             bias_v_shp = (num_heads, 1, v_proj.output_dim // num_heads)
@@ -289,11 +289,7 @@ class StandardMultiheadAttention(MultiheadAttention):
 
         self.add_zero_attn = add_zero_attn
 
-        if sdpa is not None:
-            self.sdpa = sdpa
-        else:
-            self.sdpa = create_default_sdpa()
-
+        self.sdpa = sdpa if sdpa is not None else create_default_sdpa()
         if scale_heads:
             self.head_scale_weight = Parameter(
                 torch.empty(num_heads, device=device, dtype=dtype)

@@ -81,10 +81,7 @@ class IncrementalStateBag:
             The incremental state of the module.
         """
         state = self._module_states.get(m, None)
-        if isinstance(state, kls):
-            return state
-        else:
-            return None
+        return state if isinstance(state, kls) else None
 
     def set_state(self, m: Module, state: IncrementalState) -> None:
         """Set the incremental state of ``m``.

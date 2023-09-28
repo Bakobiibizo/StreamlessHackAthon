@@ -21,10 +21,10 @@ except ImportError:
 
 def _swig_repr(self):
     try:
-        strthis = "proxy of " + self.this.__repr__()
+        strthis = f"proxy of {self.this.__repr__()}"
     except __builtin__.Exception:
         strthis = ""
-    return "<%s.%s; %s >" % (self.__class__.__module__, self.__class__.__name__, strthis,)
+    return f"<{self.__class__.__module__}.{self.__class__.__name__}; {strthis} >"
 
 
 def _swig_setattr_nondynamic_instance_variable(set):
@@ -36,7 +36,8 @@ def _swig_setattr_nondynamic_instance_variable(set):
         elif hasattr(self, name) and isinstance(getattr(type(self), name), property):
             set(self, name, value)
         else:
-            raise AttributeError("You cannot add instance attributes to %s" % self)
+            raise AttributeError(f"You cannot add instance attributes to {self}")
+
     return set_instance_attr
 
 
@@ -45,7 +46,8 @@ def _swig_setattr_nondynamic_class_variable(set):
         if hasattr(cls, name) and not isinstance(getattr(cls, name), property):
             set(cls, name, value)
         else:
-            raise AttributeError("You cannot add class attributes to %s" % cls)
+            raise AttributeError(f"You cannot add class attributes to {cls}")
+
     return set_class_attr
 
 
@@ -91,12 +93,7 @@ class ImmutableSentencePieceText_ImmutableSentencePiece(object):
     end = property(_end)
 
     def __str__(self):
-      return ('piece: \"{}\"\n'
-              'id: {}\n'
-              'surface: \"{}\"\n'
-              'begin: {}\n'
-              'end: {}\n').format(self.piece, self.id, self.surface,
-                                  self.begin, self.end)
+        return f'piece: \"{self.piece}\"\nid: {self.id}\nsurface: \"{self.surface}\"\nbegin: {self.begin}\nend: {self.end}\n'
 
     def __eq__(self, other):
       return self.piece == other.piece and self.id == other.id and self.surface == other.surface and self.begin == other.begin and self.end == other.end
@@ -458,7 +455,7 @@ class SentencePieceProcessor(object):
                nbest_size=None,
                alpha=None,
                num_threads=None):
-      """Encode text input to segmented ids or tokens.
+        """Encode text input to segmented ids or tokens.
 
         Args:
         input: input string. accepsts list of string.
@@ -479,66 +476,65 @@ class SentencePieceProcessor(object):
         num_threads: the number of threads used in the batch processing (Default = -1).
       """
 
-      if out_type is None:
-        out_type = self._out_type
-      if add_bos is None:
-        add_bos = self._add_bos
-      if add_eos is None:
-        add_eos = self._add_eos
-      if reverse is None:
-        reverse = self._reverse
-      if emit_unk_piece is None:
-        emit_unk_piece = self._emit_unk_piece
-      if enable_sampling is None:
-        enable_sampling = self._enable_sampling
-      if nbest_size is None:
-        nbest_size = self._nbest_size
-      if alpha is None:
-        alpha = self._alpha
-      if num_threads is None:
-        num_threads = self._num_threads
+        if out_type is None:
+          out_type = self._out_type
+        if add_bos is None:
+          add_bos = self._add_bos
+        if add_eos is None:
+          add_eos = self._add_eos
+        if reverse is None:
+          reverse = self._reverse
+        if emit_unk_piece is None:
+          emit_unk_piece = self._emit_unk_piece
+        if enable_sampling is None:
+          enable_sampling = self._enable_sampling
+        if nbest_size is None:
+          nbest_size = self._nbest_size
+        if alpha is None:
+          alpha = self._alpha
+        if num_threads is None:
+          num_threads = self._num_threads
 
-      if enable_sampling == True and (nbest_size is None or nbest_size == 0 or
-                                      nbest_size == 1 or alpha is None):
-        raise RuntimeError(
-            'When enable_sampling is True, We must specify "nbest_size > 1" or "nbest_size = -1", '
-            'and "alpha". "nbest_size" is enabled only on unigram mode ignored in BPE-dropout. '
-            'when "nbest_size = -1" , this method samples from all candidates on the lattice '
-            'instead of nbest segmentations.'
-        )
+        if enable_sampling == True and (nbest_size is None or nbest_size == 0 or
+                                        nbest_size == 1 or alpha is None):
+          raise RuntimeError(
+              'When enable_sampling is True, We must specify "nbest_size > 1" or "nbest_size = -1", '
+              'and "alpha". "nbest_size" is enabled only on unigram mode ignored in BPE-dropout. '
+              'when "nbest_size = -1" , this method samples from all candidates on the lattice '
+              'instead of nbest segmentations.'
+          )
 
-      if num_threads is None or type(num_threads) is not int:
-        raise RuntimeError('num_threads must be int')
+        if num_threads is None or type(num_threads) is not int:
+          raise RuntimeError('num_threads must be int')
 
-      if type(input) is list:
-        if out_type is int:
-          return self._EncodeAsIdsBatch(input, num_threads, enable_sampling, nbest_size,
-                                        alpha, add_bos, add_eos, reverse, emit_unk_piece)
-        if out_type is str:
-          return self._EncodeAsPiecesBatch(input, num_threads, enable_sampling, nbest_size,
-                                           alpha, add_bos, add_eos, reverse, emit_unk_piece)
-        if out_type == 'serialized_proto' or out_type == 'proto':
-          return self._EncodeAsSerializedProtoBatch(input, num_threads, enable_sampling, nbest_size,
-                                                    alpha, add_bos, add_eos, reverse, emit_unk_piece)
-        if out_type == 'immutable_proto':
-          return self._EncodeAsImmutableProtoBatch(input, num_threads, enable_sampling, nbest_size,
-                                                   alpha, add_bos, add_eos, reverse, emit_unk_piece)
-
-      if out_type is int:
-        return self._EncodeAsIds(input, enable_sampling, nbest_size,
-                                 alpha, add_bos, add_eos, reverse, emit_unk_piece)
-      if out_type is str:
-        return self._EncodeAsPieces(input, enable_sampling, nbest_size,
-                                    alpha, add_bos, add_eos, reverse, emit_unk_piece)
-      if out_type == 'serialized_proto' or out_type == 'proto':
-        return self._EncodeAsSerializedProto(input, enable_sampling, nbest_size,
-                                             alpha, add_bos, add_eos, reverse, emit_unk_piece)
-      if out_type == 'immutable_proto':
-        return self._EncodeAsImmutableProto(input, enable_sampling, nbest_size,
+        if type(input) is list:
+            if out_type is int:
+              return self._EncodeAsIdsBatch(input, num_threads, enable_sampling, nbest_size,
                                             alpha, add_bos, add_eos, reverse, emit_unk_piece)
+            if out_type is str:
+              return self._EncodeAsPiecesBatch(input, num_threads, enable_sampling, nbest_size,
+                                               alpha, add_bos, add_eos, reverse, emit_unk_piece)
+            if out_type in ['serialized_proto', 'proto']:
+                return self._EncodeAsSerializedProtoBatch(input, num_threads, enable_sampling, nbest_size,
+                                                          alpha, add_bos, add_eos, reverse, emit_unk_piece)
+            if out_type == 'immutable_proto':
+              return self._EncodeAsImmutableProtoBatch(input, num_threads, enable_sampling, nbest_size,
+                                                       alpha, add_bos, add_eos, reverse, emit_unk_piece)
 
-      raise RuntimeError('unknown out_type={}'.format(out_type))
-      return None
+        if out_type is int:
+          return self._EncodeAsIds(input, enable_sampling, nbest_size,
+                                   alpha, add_bos, add_eos, reverse, emit_unk_piece)
+        if out_type is str:
+          return self._EncodeAsPieces(input, enable_sampling, nbest_size,
+                                      alpha, add_bos, add_eos, reverse, emit_unk_piece)
+        if out_type in ['serialized_proto', 'proto']:
+            return self._EncodeAsSerializedProto(input, enable_sampling, nbest_size,
+                                                 alpha, add_bos, add_eos, reverse, emit_unk_piece)
+        if out_type == 'immutable_proto':
+          return self._EncodeAsImmutableProto(input, enable_sampling, nbest_size,
+                                              alpha, add_bos, add_eos, reverse, emit_unk_piece)
+
+        raise RuntimeError(f'unknown out_type={out_type}')
 
 
     def EncodeAsPieces(self, input, **kwargs):
@@ -585,7 +581,7 @@ class SentencePieceProcessor(object):
                     reverse=None,
                     emit_unk_piece=None,
                     nbest_size=None):
-      """NBestEncode text input to segmented ids or tokens.
+        """NBestEncode text input to segmented ids or tokens.
 
         Args:
         input: input string. accepsts list of string.
@@ -597,42 +593,39 @@ class SentencePieceProcessor(object):
         nbest_size: nbest size
       """
 
-      if out_type is None:
-        out_type = self._out_type
-      if add_bos is None:
-        add_bos = self._add_bos
-      if add_eos is None:
-        add_eos = self._add_eos
-      if reverse is None:
-        reverse = self._reverse
-      if emit_unk_piece is None:
-        emit_unk_piece = self._emit_unk_piece
-      if nbest_size is None:
-        nbest_size = self._nbest_size
+        if out_type is None:
+          out_type = self._out_type
+        if add_bos is None:
+          add_bos = self._add_bos
+        if add_eos is None:
+          add_eos = self._add_eos
+        if reverse is None:
+          reverse = self._reverse
+        if emit_unk_piece is None:
+          emit_unk_piece = self._emit_unk_piece
+        if nbest_size is None:
+          nbest_size = self._nbest_size
 
-      if nbest_size <= 0:
-        nbest_size=1
+        if nbest_size <= 0:
+          nbest_size=1
 
-      def _encode(text):
-        if out_type is int:
-          return self._NBestEncodeAsIds(text, nbest_size,
-                                        add_bos, add_eos, reverse, emit_unk_piece)
-        if out_type is str:
-          return self._NBestEncodeAsPieces(text, nbest_size,
-                                           add_bos, add_eos, reverse, emit_unk_piece)
-        if out_type == 'serialized_proto' or out_type == 'proto':
-          return self._NBestEncodeAsSerializedProto(text, nbest_size,
-                                                    add_bos, add_eos, reverse, emit_unk_piece)
-        if out_type == 'immutable_proto':
-          return self._NBestEncodeAsImmutableProto(text, nbest_size,
-                                                   add_bos, add_eos, reverse, emit_unk_piece)
+        def _encode(text):
+            if out_type is int:
+              return self._NBestEncodeAsIds(text, nbest_size,
+                                            add_bos, add_eos, reverse, emit_unk_piece)
+            if out_type is str:
+              return self._NBestEncodeAsPieces(text, nbest_size,
+                                               add_bos, add_eos, reverse, emit_unk_piece)
+            if out_type in ['serialized_proto', 'proto']:
+                return self._NBestEncodeAsSerializedProto(text, nbest_size,
+                                                          add_bos, add_eos, reverse, emit_unk_piece)
+            if out_type == 'immutable_proto':
+              return self._NBestEncodeAsImmutableProto(text, nbest_size,
+                                                       add_bos, add_eos, reverse, emit_unk_piece)
 
-        raise RuntimeError('unknown out_type')
+            raise RuntimeError('unknown out_type')
 
-      if type(input) is list:
-        return [_encode(n) for n in input]
-
-      return _encode(input)
+        return [_encode(n) for n in input] if type(input) is list else _encode(input)
 
 
     def NBestEncodeAsPieces(self, input, nbest_size=None, **kwargs):
@@ -666,7 +659,7 @@ class SentencePieceProcessor(object):
                              alpha=None,
                              wor=None,
                              include_best=None):
-      """SampleEncodeAndScore text input to segmented ids or tokens.
+        """SampleEncodeAndScore text input to segmented ids or tokens.
 
         Args:
         input: input string. accepsts list of string.
@@ -681,55 +674,53 @@ class SentencePieceProcessor(object):
         include_best: whether to include the best tokenization, requires wor=True (Default = false)
       """
 
-      if out_type is None:
-        out_type = self._out_type
-      if add_bos is None:
-        add_bos = self._add_bos
-      if add_eos is None:
-        add_eos = self._add_eos
-      if reverse is None:
-        reverse = self._reverse
-      if emit_unk_piece is None:
-        emit_unk_piece = self._emit_unk_piece
-      if num_samples is None:
-        num_samples = 1
-      if alpha is None:
-        alpha = 1.
-      if wor is None:
-        wor = False
-      if include_best is None:
-        include_best = False
+        if out_type is None:
+          out_type = self._out_type
+        if add_bos is None:
+          add_bos = self._add_bos
+        if add_eos is None:
+          add_eos = self._add_eos
+        if reverse is None:
+          reverse = self._reverse
+        if emit_unk_piece is None:
+          emit_unk_piece = self._emit_unk_piece
+        if num_samples is None:
+          num_samples = 1
+        if alpha is None:
+          alpha = 1.
+        if wor is None:
+          wor = False
+        if include_best is None:
+          include_best = False
 
-      if num_samples <= 0:
-        raise RuntimeError('num_examples must be positive')
+        if num_samples <= 0:
+          raise RuntimeError('num_examples must be positive')
 
-      if include_best and not wor:
-        raise RuntimeError('When include_best is True, We must specify "wor = True".')
-
-
-      def _encode(text):
-        if out_type is int:
-          return self._SampleEncodeAndScoreAsIds(text, num_samples, alpha, wor, include_best,
-                                                 add_bos, add_eos, reverse, emit_unk_piece)
-        if out_type is str:
-          return self._SampleEncodeAndScoreAsPieces(text, num_samples, alpha, wor, include_best,
-                                                    add_bos, add_eos, reverse, emit_unk_piece)
-
-        if out_type == 'serialized_proto' or out_type == 'proto':
-          return self._SampleEncodeAndScoreAsSerializedProto(text, num_samples, alpha, wor, include_best,
-                                                             add_bos, add_eos, reverse, emit_unk_piece)
-
-        if out_type == 'immutable_proto':
-          return self._SampleEncodeAndScoreAsImmutableProto(text, num_samples, alpha, wor, include_best,
-                                                            add_bos, add_eos, reverse, emit_unk_piece)
-
-        raise RuntimeError('unknown output type')
+        if include_best and not wor:
+          raise RuntimeError('When include_best is True, We must specify "wor = True".')
 
 
-      if type(input) is list:
-        return [_encode(n) for n in input]
+        def _encode(text):
+            if out_type is int:
+              return self._SampleEncodeAndScoreAsIds(text, num_samples, alpha, wor, include_best,
+                                                     add_bos, add_eos, reverse, emit_unk_piece)
+            if out_type is str:
+              return self._SampleEncodeAndScoreAsPieces(text, num_samples, alpha, wor, include_best,
+                                                        add_bos, add_eos, reverse, emit_unk_piece)
 
-      return _encode(input)
+            if out_type in ['serialized_proto', 'proto']:
+                return self._SampleEncodeAndScoreAsSerializedProto(text, num_samples, alpha, wor, include_best,
+                                                                   add_bos, add_eos, reverse, emit_unk_piece)
+
+            if out_type == 'immutable_proto':
+              return self._SampleEncodeAndScoreAsImmutableProto(text, num_samples, alpha, wor, include_best,
+                                                                add_bos, add_eos, reverse, emit_unk_piece)
+
+            raise RuntimeError('unknown output type')
+
+
+
+        return [_encode(n) for n in input] if type(input) is list else _encode(input)
 
 
     def SampleEncodeAndScoreAsPieces(self, input, num_samples=None, alpha=None, **kwargs):
@@ -753,80 +744,79 @@ class SentencePieceProcessor(object):
 
 
     def Decode(self, input, out_type=str, num_threads=None):
-      """Decode processed id or token sequences.
+        """Decode processed id or token sequences.
 
       Args:
         out_type: output type. str or 'serialized_proto' or 'immutable_proto' (Default = str)
         num_threads: the number of threads used in the batch processing (Default = -1).
       """
 
-      if num_threads is None:
-        num_threads = self._num_threads
+        if num_threads is None:
+          num_threads = self._num_threads
 
-      if num_threads is None or type(num_threads) is not int:
-        raise RuntimeError('num_threads must be int')
+        if num_threads is None or type(num_threads) is not int:
+          raise RuntimeError('num_threads must be int')
 
-      if not input:
-        return ''
+        if not input:
+          return ''
 
-      if out_type is str:
-        if type(input) is int:
-          return self._DecodeIds([input])
-        if type(input) is str:
-          return self._DecodePieces([input])
+        if out_type is str:
+          if type(input) is int:
+            return self._DecodeIds([input])
+          if type(input) is str:
+            return self._DecodePieces([input])
 
-        if type(input) is list:
-          if len(input) == 0 or type(input[0]) is int:
-            return self._DecodeIds(input)
-          if type(input[0]) is str:
-            return self._DecodePieces(input)
+          if type(input) is list:
+            if len(input) == 0 or type(input[0]) is int:
+              return self._DecodeIds(input)
+            if type(input[0]) is str:
+              return self._DecodePieces(input)
 
-          if type(input[0]) is list:
-            if len(input[0]) == 0 or type(input[0][0]) is int:
-             return self._DecodeIdsBatch(input, num_threads)
-            if type(input[0][0]) is str:
-             return self._DecodePiecesBatch(input, num_threads)
+            if type(input[0]) is list:
+              if len(input[0]) == 0 or type(input[0][0]) is int:
+               return self._DecodeIdsBatch(input, num_threads)
+              if type(input[0][0]) is str:
+               return self._DecodePiecesBatch(input, num_threads)
 
-      if out_type == 'serialized_proto':
-        if type(input) is int:
-          return self._DecodeIdsAsSerializedProto([input])
-        if type(input) is str:
-          return self._DecodePiecesAsSerializedProto([input])
+        if out_type == 'serialized_proto':
+          if type(input) is int:
+            return self._DecodeIdsAsSerializedProto([input])
+          if type(input) is str:
+            return self._DecodePiecesAsSerializedProto([input])
 
-        if type(input) is list:
-          if len(input) == 0 or type(input[0]) is int:
-            return self._DecodeIdsAsSerializedProto(input)
-          if type(input[0]) is str:
-            return self._DecodePiecesAsSerializedProto(input)
+          if type(input) is list:
+            if len(input) == 0 or type(input[0]) is int:
+              return self._DecodeIdsAsSerializedProto(input)
+            if type(input[0]) is str:
+              return self._DecodePiecesAsSerializedProto(input)
 
-          if type(input[0]) is list:
-            if len(input[0]) == 0 or type(input[0][0]) is int:
-             return self._DecodeIdsAsSerializedProtoBatch(input, num_threads)
-            if type(input[0][0]) is str:
-             return self._DecodePiecesAsSerializedProtoBatch(input, num_threads)
-
-
-      if out_type == 'immutable_proto':
-        if type(input) is int:
-          return self._DecodeIdsAsImmutableProto([input])
-        if type(input) is str:
-          return self._DecodePiecesAsImmutableProto([input])
-
-        if type(input) is list:
-          if len(input) == 0 or type(input[0]) is int:
-            return self._DecodeIdsAsImmutableProto(input)
-          if type(input[0]) is str:
-            return self._DecodePiecesAsImmutableProto(input)
-
-          if type(input[0]) is list:
-            if len(input[0]) == 0 or type(input[0][0]) is int:
-             return self._DecodeIdsAsImmutableProtoBatch(input, num_threads)
-            if type(input[0][0]) is str:
-             return self._DecodePiecesAsImmutableProtoBatch(input, num_threads)
+            if type(input[0]) is list:
+              if len(input[0]) == 0 or type(input[0][0]) is int:
+               return self._DecodeIdsAsSerializedProtoBatch(input, num_threads)
+              if type(input[0][0]) is str:
+               return self._DecodePiecesAsSerializedProtoBatch(input, num_threads)
 
 
-      raise RuntimeError('unknown output or input type')
-      return None
+        if out_type == 'immutable_proto':
+          if type(input) is int:
+            return self._DecodeIdsAsImmutableProto([input])
+          if type(input) is str:
+            return self._DecodePiecesAsImmutableProto([input])
+
+          if type(input) is list:
+            if len(input) == 0 or type(input[0]) is int:
+              return self._DecodeIdsAsImmutableProto(input)
+            if type(input[0]) is str:
+              return self._DecodePiecesAsImmutableProto(input)
+
+            if type(input[0]) is list:
+              if len(input[0]) == 0 or type(input[0][0]) is int:
+               return self._DecodeIdsAsImmutableProtoBatch(input, num_threads)
+              if type(input[0][0]) is str:
+               return self._DecodePiecesAsImmutableProtoBatch(input, num_threads)
+
+
+        raise RuntimeError('unknown output or input type')
 
 
     def DecodePieces(self, input, out_type=str, **kwargs):
@@ -940,48 +930,45 @@ class SentencePieceTrainer(object):
 
     @staticmethod
     def _Train(arg=None, **kwargs):
-      """Train Sentencepiece model. Accept both kwargs and legacy string arg."""
-      if arg is not None and type(arg) is str:
-        return SentencePieceTrainer._TrainFromString(arg)
+        """Train Sentencepiece model. Accept both kwargs and legacy string arg."""
+        if arg is not None and type(arg) is str:
+          return SentencePieceTrainer._TrainFromString(arg)
 
-      def _encode(value):
-        """Encode value to CSV.."""
-        if type(value) is list:
-          if sys.version_info[0] == 3:
-            f = StringIO()
+        def _encode(value):
+            """Encode value to CSV.."""
+            if type(value) is list:
+                f = StringIO() if sys.version_info[0] == 3 else BytesIO()
+                writer = csv.writer(f, lineterminator='')
+                writer.writerow([str(v) for v in value])
+                return f.getvalue()
+            else:
+                return str(value)
+
+        sentence_iterator = None
+        model_writer = None
+        new_kwargs = {}
+        for key, value in kwargs.items():
+          if key in ['sentence_iterator', 'sentence_reader']:
+            sentence_iterator = value
+          elif key in ['model_writer']:
+            model_writer = value
           else:
-            f = BytesIO()
-          writer = csv.writer(f, lineterminator='')
-          writer.writerow([str(v) for v in value])
-          return f.getvalue()
-        else:
-          return str(value)
+            new_kwargs[key] = _encode(value)
 
-      sentence_iterator = None
-      model_writer = None
-      new_kwargs = {}
-      for key, value in kwargs.items():
-        if key in ['sentence_iterator', 'sentence_reader']:
-          sentence_iterator = value
-        elif key in ['model_writer']:
-          model_writer = value
+        if model_writer:
+          if sentence_iterator:
+            model_proto = SentencePieceTrainer._TrainFromMap4(new_kwargs,
+                                                             sentence_iterator)
+          else:
+            model_proto = SentencePieceTrainer._TrainFromMap3(new_kwargs)
+          model_writer.write(model_proto)
         else:
-          new_kwargs[key] = _encode(value)
+          if sentence_iterator:
+            return SentencePieceTrainer._TrainFromMap2(new_kwargs, sentence_iterator)
+          else:
+            return SentencePieceTrainer._TrainFromMap(new_kwargs)
 
-      if model_writer:
-        if sentence_iterator:
-          model_proto = SentencePieceTrainer._TrainFromMap4(new_kwargs,
-                                                           sentence_iterator)
-        else:
-          model_proto = SentencePieceTrainer._TrainFromMap3(new_kwargs)
-        model_writer.write(model_proto)
-      else:
-        if sentence_iterator:
-          return SentencePieceTrainer._TrainFromMap2(new_kwargs, sentence_iterator)
-        else:
-          return SentencePieceTrainer._TrainFromMap(new_kwargs)
-
-      return None
+        return None
 
     @staticmethod
     def Train(arg=None, logstream=None, **kwargs):
@@ -1031,20 +1018,17 @@ def _add_snake_case(classname):
 
 
 def _batchnize(classname, name):
-  """Enables batch request for the method classname.name."""
-  func = getattr(classname, name, None)
-  def _func(v, n):
-    if type(n) is int and (n < 0 or n >= v.piece_size()):
-      raise IndexError('piece id is out of range.')
-    return func(v, n)
+    """Enables batch request for the method classname.name."""
+    func = getattr(classname, name, None)
+    def _func(v, n):
+      if type(n) is int and (n < 0 or n >= v.piece_size()):
+        raise IndexError('piece id is out of range.')
+      return func(v, n)
 
-  def _batched_func(self, arg):
-    if type(arg) is list:
-      return [_func(self, n) for n in arg]
-    else:
-      return _func(self, arg)
+    def _batched_func(self, arg):
+        return [_func(self, n) for n in arg] if type(arg) is list else _func(self, arg)
 
-  setattr(classname, name, _batched_func)
+    setattr(classname, name, _batched_func)
 
 
 _sentencepiece_processor_init_native = SentencePieceProcessor.__init__

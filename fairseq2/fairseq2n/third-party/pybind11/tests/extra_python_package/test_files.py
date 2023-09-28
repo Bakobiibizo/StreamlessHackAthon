@@ -121,27 +121,17 @@ def test_build_sdist(monkeypatch, tmpdir):
     (sdist,) = tmpdir.visit("*.tar.gz")
 
     with tarfile.open(str(sdist), "r:gz") as tar:
-        start = tar.getnames()[0] + "/"
+        start = f"{tar.getnames()[0]}/"
         version = start[9:-1]
         simpler = {n.split("/", 1)[-1] for n in tar.getnames()[1:]}
 
-        with contextlib.closing(
-            tar.extractfile(tar.getmember(start + "setup.py"))
-        ) as f:
+        with contextlib.closing(tar.extractfile(tar.getmember(f"{start}setup.py"))) as f:
             setup_py = f.read()
 
-        with contextlib.closing(
-            tar.extractfile(tar.getmember(start + "pyproject.toml"))
-        ) as f:
+        with contextlib.closing(tar.extractfile(tar.getmember(f"{start}pyproject.toml"))) as f:
             pyproject_toml = f.read()
 
-        with contextlib.closing(
-            tar.extractfile(
-                tar.getmember(
-                    start + "pybind11/share/cmake/pybind11/pybind11Config.cmake"
-                )
-            )
-        ) as f:
+        with contextlib.closing(tar.extractfile(tar.getmember(f"{start}pybind11/share/cmake/pybind11/pybind11Config.cmake"))) as f:
             contents = f.read().decode("utf8")
         assert 'set(pybind11_INCLUDE_DIR "${PACKAGE_PREFIX_DIR}/include")' in contents
 
@@ -186,18 +176,14 @@ def test_build_global_dist(monkeypatch, tmpdir):
     (sdist,) = tmpdir.visit("*.tar.gz")
 
     with tarfile.open(str(sdist), "r:gz") as tar:
-        start = tar.getnames()[0] + "/"
+        start = f"{tar.getnames()[0]}/"
         version = start[16:-1]
         simpler = {n.split("/", 1)[-1] for n in tar.getnames()[1:]}
 
-        with contextlib.closing(
-            tar.extractfile(tar.getmember(start + "setup.py"))
-        ) as f:
+        with contextlib.closing(tar.extractfile(tar.getmember(f"{start}setup.py"))) as f:
             setup_py = f.read()
 
-        with contextlib.closing(
-            tar.extractfile(tar.getmember(start + "pyproject.toml"))
-        ) as f:
+        with contextlib.closing(tar.extractfile(tar.getmember(f"{start}pyproject.toml"))) as f:
             pyproject_toml = f.read()
 
     files = {f"pybind11/{n}" for n in all_files}

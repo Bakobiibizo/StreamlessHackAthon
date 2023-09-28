@@ -51,11 +51,7 @@ def tmp_rng_seed(device: Device, seed: int = 0) -> Generator[None, None, None]:
     """
     device = Device(device)
 
-    if device.type == "cuda":
-        devices = [device]
-    else:
-        devices = []
-
+    devices = [device] if device.type == "cuda" else []
     with torch.random.fork_rng(devices):
         torch.manual_seed(seed)
 

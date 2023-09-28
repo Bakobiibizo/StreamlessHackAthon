@@ -171,7 +171,7 @@ class Seq2SeqGenerator:
 
         # Once a source sequence has `beam_size` hypotheses, its search is moved
         # from `active_searches` to `finished_searches`.
-        finished_searches: List[List[Hypothesis]] = [[] for i in range(num_searches)]
+        finished_searches: List[List[Hypothesis]] = [[] for _ in range(num_searches)]
 
         num_remaining_searches = num_searches
 

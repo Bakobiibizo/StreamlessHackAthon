@@ -432,11 +432,7 @@ def from_model(model_name: str, hf_token: str | None, alias: str | None, **kwarg
         output = pipeline["postprocess"](response)
         return output
 
-    if alias is None:
-        query_huggingface_api.__name__ = model_name
-    else:
-        query_huggingface_api.__name__ = alias
-
+    query_huggingface_api.__name__ = model_name if alias is None else alias
     interface_info = {
         "fn": query_huggingface_api,
         "inputs": pipeline["inputs"],
@@ -489,19 +485,18 @@ def from_spaces(
         config = json.loads(result.group(1))  # type: ignore
     except AttributeError as ae:
         raise ValueError(f"Could not load the Space: {space_name}") from ae
-    if "allow_flagging" in config:  # Create an Interface for Gradio 2.x Spaces
+    if "allow_flagging" in config:
         return from_spaces_interface(
             space_name, config, alias, hf_token, iframe_url, **kwargs
         )
-    else:  # Create a Blocks for Gradio 3.x Spaces
-        if kwargs:
-            warnings.warn(
-                "You cannot override parameters for this Space by passing in kwargs. "
-                "Instead, please load the Space as a function and use it to create a "
-                "Blocks or Interface locally. You may find this Guide helpful: "
-                "https://gradio.app/using_blocks_like_functions/"
-            )
-        return from_spaces_blocks(space=space_name, hf_token=hf_token)
+    if kwargs:
+        warnings.warn(
+            "You cannot override parameters for this Space by passing in kwargs. "
+            "Instead, please load the Space as a function and use it to create a "
+            "Blocks or Interface locally. You may find this Guide helpful: "
+            "https://gradio.app/using_blocks_like_functions/"
+        )
+    return from_spaces_blocks(space=space_name, hf_token=hf_token)
 
 
 def from_spaces_blocks(space: str, hf_token: str | None) -> Blocks:

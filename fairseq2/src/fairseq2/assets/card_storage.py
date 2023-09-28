@@ -65,11 +65,7 @@ class LocalAssetCardStorage(AssetCardStorage):
                 f"`name` must be a valid filename, but is '{name}' instead."
             )
 
-        if env:
-            filename = f"{name}@{env}"
-        else:
-            filename = name
-
+        filename = f"{name}@{env}" if env else name
         pathname = self.base_pathname.joinpath(filename).with_suffix(".yaml")
 
         try:

@@ -39,19 +39,19 @@ def test_set_get():
     assert opts.preemph_coeff == 0.25
 
     opts.remove_dc_offset = False
-    assert opts.remove_dc_offset is False
+    assert not opts.remove_dc_offset
 
     opts.window_type = "hanning"
     assert opts.window_type == "hanning"
 
     opts.round_to_power_of_two = False
-    assert opts.round_to_power_of_two is False
+    assert not opts.round_to_power_of_two
 
     opts.blackman_coeff = 0.25
     assert opts.blackman_coeff == 0.25
 
     opts.snip_edges = False
-    assert opts.snip_edges is False
+    assert not opts.snip_edges
 
 
 def test_from_empty_dict():

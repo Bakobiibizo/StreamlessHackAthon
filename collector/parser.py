@@ -25,13 +25,7 @@ def extract_text_from_html(
             if not paragraphs:
                 raise ValueError("No paragraphs found.")
 
-            # Initialize an empty string to collect the text content
-            text_content = ""
-
-            # Add paragraphs to the text content
-            for paragraph in paragraphs:
-                text_content += f"\n\n{paragraph}\n"
-
+            text_content = "".join(f"\n\n{paragraph}\n" for paragraph in paragraphs)
             # Log the extractions
             with open("src/paragraphs.txt", "w", encoding="utf-8") as file:
                 file.write(text_content)

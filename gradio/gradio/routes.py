@@ -126,14 +126,13 @@ class App(FastAPI):
 
     def configure_app(self, blocks: gradio.Blocks) -> None:
         auth = blocks.auth
-        if auth is not None:
-            if not callable(auth):
-                self.auth = {account[0]: account[1] for account in auth}
-            else:
-                self.auth = auth
-        else:
+        if auth is None:
             self.auth = None
 
+        elif not callable(auth):
+            self.auth = {account[0]: account[1] for account in auth}
+        else:
+            self.auth = auth
         self.blocks = blocks
         self.cwd = os.getcwd()
         self.favicon_path = blocks.favicon_path
@@ -159,8 +158,7 @@ class App(FastAPI):
         headers = {}
         if Context.hf_token is not None and is_hf_url:
             headers["Authorization"] = f"Bearer {Context.hf_token}"
-        rp_req = client.build_request("GET", url, headers=headers)
-        return rp_req
+        return client.build_request("GET", url, headers=headers)
 
     @staticmethod
     def create_app(
@@ -425,12 +423,12 @@ class App(FastAPI):
             return FileResponse(abs_path, headers={"Accept-Ranges": "bytes"})
 
         @app.get(
-            "/stream/{session_hash}/{run}/{component_id}",
-            dependencies=[Depends(login_check)],
-        )
+                "/stream/{session_hash}/{run}/{component_id}",
+                dependencies=[Depends(login_check)],
+            )
         async def stream(
-            session_hash: str, run: int, component_id: int, request: fastapi.Request
-        ):
+                session_hash: str, run: int, component_id: int, request: fastapi.Request
+            ):
             stream: list = (
                 app.get_blocks()
                 .pending_streams[session_hash]
@@ -445,7 +443,7 @@ class App(FastAPI):
                 max_wait_time = 120  # maximum wait between yields - assume generator thread has crashed otherwise.
                 wait_time = 0
                 while True:
-                    if len(stream) == 0:
+                    if not stream:
                         if wait_time > max_wait_time:
                             return
                         wait_time += check_stream_rate
@@ -635,7 +633,7 @@ def safe_join(directory: str, path: str) -> str:
         sep for sep in [os.path.sep, os.path.altsep] if sep is not None and sep != "/"
     ]
 
-    if path == "":
+    if not path:
         raise HTTPException(400)
 
     filename = posixpath.normpath(path)
@@ -661,9 +659,11 @@ def get_types(cls_set: List[Type]):
     for cls in cls_set:
         doc = inspect.getdoc(cls) or ""
         doc_lines = doc.split("\n")
-        for line in doc_lines:
-            if "value (" in line:
-                types.append(line.split("value (")[1].split(")")[0])
+        types.extend(
+            line.split("value (")[1].split(")")[0]
+            for line in doc_lines
+            if "value (" in line
+        )
         docset.append(doc_lines[1].split(":")[-1])
     return docset, types
 

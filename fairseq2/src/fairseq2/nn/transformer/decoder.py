@@ -183,11 +183,7 @@ class StandardTransformerDecoder(TransformerDecoder):
 
         num_layers = len(self.layers)
 
-        if seqs.size(1) > 1:
-            self_attn_mask = self.self_attn_mask_gen(seqs)
-        else:
-            self_attn_mask = None
-
+        self_attn_mask = self.self_attn_mask_gen(seqs) if seqs.size(1) > 1 else None
         for layer_idx, layer in enumerate(self.layers.drop_iter()):
             seqs, padding_mask = layer(
                 seqs,
@@ -214,4 +210,4 @@ class StandardTransformerDecoder(TransformerDecoder):
             self.self_attn_mask_gen, "__name__", repr(self.self_attn_mask_gen)
         )
 
-        return s + f", norm_order={self.norm_order}, self_attn_mask_gen={mask_gen_name}"
+        return f"{s}, norm_order={self.norm_order}, self_attn_mask_gen={mask_gen_name}"

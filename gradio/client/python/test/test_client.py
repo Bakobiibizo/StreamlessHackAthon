@@ -128,9 +128,7 @@ class TestClientPredictions:
 
             assert job.outputs() == [str(i) for i in range(3)]
 
-            outputs = []
-            for o in client.submit(3, fn_index=0):
-                outputs.append(o)
+            outputs = list(client.submit(3, fn_index=0))
             assert outputs == [str(i) for i in range(3)]
 
     @pytest.mark.flaky
@@ -148,7 +146,7 @@ class TestClientPredictions:
         with connect(calculator_demo) as client:
             job = client.submit("foo", "add", 4, fn_index=0)
             output = list(job)
-            assert output == []
+            assert not output
 
     @pytest.mark.flaky
     def test_timeout(self, sentiment_classification_demo):
@@ -361,7 +359,7 @@ class TestClientPredictions:
 
     def test_can_call_mounted_app_via_api(self):
         def greet(name):
-            return "Hello " + name + "!"
+            return f"Hello {name}!"
 
         gradio_app = gr.Interface(
             fn=greet,
@@ -580,7 +578,7 @@ class TestStatusUpdates:
 class TestAPIInfo:
     @pytest.mark.parametrize("trailing_char", ["/", ""])
     def test_test_endpoint_src(self, trailing_char):
-        src = "https://gradio-calculator.hf.space" + trailing_char
+        src = f"https://gradio-calculator.hf.space{trailing_char}"
         client = Client(src=src)
         assert client.endpoints[0].root_url == "https://gradio-calculator.hf.space/"
 

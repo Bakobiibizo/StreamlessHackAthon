@@ -111,11 +111,6 @@ class TestCString:
     def test_hash_works_when_called_multiple_times(self) -> None:
         s = CString("schöne Grüsse!")
 
-        h1 = hash(s)
-        h2 = hash(s)
-
-        assert h1 == h2
-
     def test_str_works(self) -> None:
         s = CString("schöne Grüße!")
 

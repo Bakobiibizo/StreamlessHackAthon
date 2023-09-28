@@ -47,7 +47,7 @@ setup(
     zip_safe=False,
     python_requires=">=3.8",
     install_requires=[
-        "fairseq2n==" + fairseq2n_version,
+        f"fairseq2n=={fairseq2n_version}",
         "jiwer~=3.0",
         "numpy~=1.23",
         "overrides~=7.3",

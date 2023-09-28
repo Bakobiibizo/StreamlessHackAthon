@@ -67,9 +67,9 @@ class BannedSequenceLogitsProcessor(LogitsProcessor):
         :param device:
             device
         """
-        if len(banned_seqs) == 0:
+        if not banned_seqs:
             raise ValueError("`banned_seqs` should contain at least one element.")
-        if any([t.ndim != 1 for t in banned_seqs]):
+        if any(t.ndim != 1 for t in banned_seqs):
             raise ValueError(
                 "`banned_seqs` should contain only one dimensional tensors."
             )
@@ -77,7 +77,7 @@ class BannedSequenceLogitsProcessor(LogitsProcessor):
         self.pad_idx = pad_idx
         self.device = device
 
-        self.max_prefix_len = max([len(t) - 1 for t in banned_seqs])
+        self.max_prefix_len = max(len(t) - 1 for t in banned_seqs)
         self.banned_prefix = self._create_pad_tensor(
             size=(len(banned_seqs), self.max_prefix_len)
         )
@@ -166,10 +166,8 @@ class BannedSequenceLogitsProcessor(LogitsProcessor):
 
     @staticmethod
     def _concat_optional_tensors(tensors: List[Optional[Tensor]]) -> Optional[Tensor]:
-        not_none_tensors = [t for t in tensors if t is not None]
-
-        result: Optional[Tensor] = None
-        if len(not_none_tensors) > 0:
-            result = torch.cat(not_none_tensors).unique()
-
-        return result
+        return (
+            torch.cat(not_none_tensors).unique()
+            if (not_none_tensors := [t for t in tensors if t is not None])
+            else None
+        )

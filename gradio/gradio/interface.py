@@ -116,8 +116,7 @@ class Interface(Blocks):
         """
         interface_info = load_from_pipeline(pipeline)
         kwargs = dict(interface_info, **kwargs)
-        interface = cls(**kwargs)
-        return interface
+        return cls(**kwargs)
 
     def __init__(
         self,

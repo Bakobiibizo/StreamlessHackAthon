@@ -73,11 +73,7 @@ class DefaultAssetStore(AssetStore):
         :param ignore_env:
             If ``True``, ignores environment-specific asset cards.
         """
-        if ignore_env:
-            self.env = None
-        else:
-            self.env = self._determine_environment()
-
+        self.env = None if ignore_env else self._determine_environment()
         self._storage = storage
 
         self._cache = {}
@@ -85,10 +81,7 @@ class DefaultAssetStore(AssetStore):
     @staticmethod
     def _determine_environment() -> Optional[str]:
         # TODO: Make extensible instead of hard-coded conditions.
-        if "FAIR_ENV_CLUSTER" in os.environ:
-            return "faircluster"
-
-        return None
+        return "faircluster" if "FAIR_ENV_CLUSTER" in os.environ else None
 
     @finaloverride
     def retrieve_card(self, name: str, ignore_cache: bool = False) -> AssetCard:

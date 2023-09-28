@@ -74,7 +74,7 @@ def encode_plot_to_base64(plt):
         plt.savefig(output_bytes, format="png")
         bytes_data = output_bytes.getvalue()
     base64_str = str(base64.b64encode(bytes_data), "utf-8")
-    return "data:image/png;base64," + base64_str
+    return f"data:image/png;base64,{base64_str}"
 
 
 def get_pil_metadata(pil_image):
@@ -96,7 +96,7 @@ def encode_pil_to_bytes(pil_image, format="png"):
 def encode_pil_to_base64(pil_image):
     bytes_data = encode_pil_to_bytes(pil_image)
     base64_str = str(base64.b64encode(bytes_data), "utf-8")
-    return "data:image/png;base64," + base64_str
+    return f"data:image/png;base64,{base64_str}"
 
 
 def encode_array_to_base64(image_array):
@@ -105,7 +105,7 @@ def encode_array_to_base64(image_array):
         pil_image.save(output_bytes, "PNG")
         bytes_data = output_bytes.getvalue()
     base64_str = str(base64.b64encode(bytes_data), "utf-8")
-    return "data:image/png;base64," + base64_str
+    return f"data:image/png;base64,{base64_str}"
 
 
 def resize_and_crop(img, size, crop_type="center"):
@@ -490,11 +490,7 @@ def _convert(image, dtype, force_copy=False, uniform=False):
 
 
 def ffmpeg_installed() -> bool:
-    if wasm_utils.IS_WASM:
-        # TODO: Support ffmpeg in WASM
-        return False
-
-    return shutil.which("ffmpeg") is not None
+    return False if wasm_utils.IS_WASM else shutil.which("ffmpeg") is not None
 
 
 def video_is_playable(video_filepath: str) -> bool:
@@ -543,4 +539,4 @@ def convert_video_to_playable_mp4(video_path: str) -> str:
     finally:
         # Remove temp file
         os.remove(tmp_file.name)  # type: ignore
-    return str(output_path)
+    return output_path

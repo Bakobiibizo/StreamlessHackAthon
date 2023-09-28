@@ -20,12 +20,10 @@ class TestBucketOp:
         for _ in range(2):
             it = iter(pipeline)
 
-            for i in range(25):
+            for _ in range(25):
                 d = next(it)
 
-                offset = i * bucket_size
-
-                assert d == [offset + i for i in range(4)]
+                assert d == [i * bucket_size + i for i in range(4)]
 
             with pytest.raises(StopIteration):
                 next(it)
@@ -61,12 +59,10 @@ class TestBucketOp:
         for _ in range(2):
             it = iter(pipeline)
 
-            for i in range(14):
+            for _ in range(14):
                 d = next(it)
 
-                offset = i * bucket_size
-
-                assert d == [offset + i for i in range(7)]
+                assert d == [i * bucket_size + i for i in range(7)]
 
             if not drop:
                 d = next(it)

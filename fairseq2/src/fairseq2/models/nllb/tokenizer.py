@@ -41,14 +41,9 @@ class NllbTokenizer(TextTokenizer):
         # Each language is represented by a `__lang__` control symbol.
         control_symbols = [f"__{lang}__" for lang in langs]
 
-        # Internal control symbols that are not relevant for eval use.
-        control_symbols.extend(["<MINED_DATA>", "<MMT_BT_DATA>", "<SMT_BT_DATA>"])
-
-        # The SentencePiece model of NLLB is peculiar as it does not define a
-        # pad symbol. We use an undocumented feature of our C++ API to insert
-        # a pad symbol to the model at index 0.
-        control_symbols.append("<pad>@0")
-
+        control_symbols.extend(
+            ["<MINED_DATA>", "<MMT_BT_DATA>", "<SMT_BT_DATA>", "<pad>@0"]
+        )
         self.model = SentencePieceModel(pathname, control_symbols)
 
         self.langs = set(langs)

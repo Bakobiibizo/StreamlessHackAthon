@@ -92,11 +92,7 @@ class Queue:
         self.server_app = app
 
     def get_active_worker_count(self) -> int:
-        count = 0
-        for worker in self.active_jobs:
-            if worker is not None:
-                count += 1
-        return count
+        return sum(1 for worker in self.active_jobs if worker is not None)
 
     def get_events_in_batch(self) -> tuple[list[Event] | None, bool]:
         if not (self.event_queue):
@@ -409,10 +405,7 @@ class Queue:
         http_response = response_class(
             output
         )  # Do the same as https://github.com/tiangolo/fastapi/blob/0.87.0/fastapi/routing.py#L264
-        # Also, decode the JSON string to a Python object, emulating the HTTP client behavior e.g. the `json()` method of `httpx`.
-        response_json = json.loads(http_response.body.decode())
-
-        return response_json
+        return json.loads(http_response.body.decode())
 
     async def process_events(self, events: list[Event], batch: bool) -> None:
         awake_events: list[Event] = []
@@ -472,10 +465,7 @@ class Queue:
                         response = None
                         err = e
                 for event in awake_events:
-                    if response is None:
-                        relevant_response = err
-                    else:
-                        relevant_response = old_response or old_err
+                    relevant_response = err if response is None else old_response or old_err
                     await self.send_log_updates_for_event(event)
                     await self.send_message(
                         event,

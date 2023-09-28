@@ -146,10 +146,7 @@ class DefaultAssetDownloadManager(AssetDownloadManager):
 
     @staticmethod
     def _try_as_pathname(uri: str) -> Optional[Path]:
-        if uri.startswith("file://"):
-            return Path(uri[6:])
-
-        return None
+        return Path(uri[6:]) if uri.startswith("file://") else None
 
     @classmethod
     def _get_pathname(cls, uri: str, sub_dir: str) -> Path:
@@ -176,13 +173,12 @@ class DefaultAssetDownloadManager(AssetDownloadManager):
                 f"`uri` must be a valid URI, but is '{uri}' instead."
             ) from ex
 
-        filename = PurePath(uri_parts.path).name
-        if not filename:
+        if filename := PurePath(uri_parts.path).name:
+            return filename
+        else:
             raise ValueError(
                 f"The path component of the URI '{uri}' must end with a filename."
             )
-
-        return filename
 
     def _download_file(
         self, uri: str, pathname: Path, display_name: str, force: bool, progress: bool

@@ -40,22 +40,22 @@ def test_default():
 def test_set_get():
     opts = knf.FbankOptions()
     opts.use_energy = True
-    assert opts.use_energy is True
+    assert opts.use_energy
 
     opts.energy_floor = 1
     assert opts.energy_floor == 1
 
     opts.raw_energy = False
-    assert opts.raw_energy is False
+    assert not opts.raw_energy
 
     opts.htk_compat = True
-    assert opts.htk_compat is True
+    assert opts.htk_compat
 
     opts.use_log_fbank = False
-    assert opts.use_log_fbank is False
+    assert not opts.use_log_fbank
 
     opts.use_power = False
-    assert opts.use_power is False
+    assert not opts.use_power
 
 
 def test_set_get_frame_opts():
@@ -77,19 +77,19 @@ def test_set_get_frame_opts():
     assert opts.frame_opts.preemph_coeff == 0.25
 
     opts.frame_opts.remove_dc_offset = False
-    assert opts.frame_opts.remove_dc_offset is False
+    assert not opts.frame_opts.remove_dc_offset
 
     opts.frame_opts.window_type = "hanning"
     assert opts.frame_opts.window_type == "hanning"
 
     opts.frame_opts.round_to_power_of_two = False
-    assert opts.frame_opts.round_to_power_of_two is False
+    assert not opts.frame_opts.round_to_power_of_two
 
     opts.frame_opts.blackman_coeff = 0.25
     assert opts.frame_opts.blackman_coeff == 0.25
 
     opts.frame_opts.snip_edges = False
-    assert opts.frame_opts.snip_edges is False
+    assert not opts.frame_opts.snip_edges
 
 
 def test_set_get_mel_opts():
@@ -111,10 +111,10 @@ def test_set_get_mel_opts():
     assert opts.mel_opts.vtln_high == -100
 
     opts.mel_opts.debug_mel = True
-    assert opts.mel_opts.debug_mel is True
+    assert opts.mel_opts.debug_mel
 
     opts.mel_opts.htk_mode = True
-    assert opts.mel_opts.htk_mode is True
+    assert opts.mel_opts.htk_mode
 
 
 def test_from_empty_dict():

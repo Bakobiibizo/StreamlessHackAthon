@@ -254,12 +254,9 @@ class Wav2Vec2Model(Module):
         # (N x S x L, M)
         distractors = targets[rand_indices]
 
-        # (N x S x L) -> (N, S, L, M)
-        distractors = distractors.view(
+        return distractors.view(
             batch_size, seq_len, self.num_distractors, model_dim
         )
-
-        return distractors
 
     def _compute_logits(
         self, seqs: Tensor, targets: Tensor, distractors: Tensor

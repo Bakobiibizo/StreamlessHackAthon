@@ -8,7 +8,7 @@ with gr.Blocks() as demo:
 
     @greet_btn.click(inputs=name, outputs=output)
     def greet(name):
-        return "Hello " + name + "!"
+        return f"Hello {name}!"
 
    
 

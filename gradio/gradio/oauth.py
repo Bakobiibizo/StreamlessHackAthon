@@ -75,7 +75,7 @@ def _add_oauth_routes(app: fastapi.FastAPI) -> None:
         client_id=OAUTH_CLIENT_ID,
         client_secret=OAUTH_CLIENT_SECRET,
         client_kwargs={"scope": OAUTH_SCOPES},
-        server_metadata_url=OPENID_PROVIDER_URL + "/.well-known/openid-configuration",
+        server_metadata_url=f"{OPENID_PROVIDER_URL}/.well-known/openid-configuration",
     )
 
     # Define OAuth routes

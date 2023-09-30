@@ -62,11 +62,7 @@ class PositionEncoder(Module, ABC):
             Same as ``seqs``.
         """
         if self.max_seq_len is not None:
-            if not self.training and state_bag is not None:
-                start_step = state_bag.step
-            else:
-                start_step = 0
-
+            start_step = 0 if self.training or state_bag is None else state_bag.step
             if (seq_len := start_step + seqs.size(1)) > self.max_seq_len:
                 raise ValueError(
                     f"The input sequence length must be less than or equal to the maximum sequence length ({self.max_seq_len}), but is {seq_len} instead."
@@ -171,11 +167,7 @@ class SinusoidalPositionEncoder(PositionEncoder):
 
         # This is a legacy parameter that should only be set when the encodings
         # must be compatible with fairseq.
-        if _legacy_pad_idx is None:
-            self._sin_offset = 0
-        else:
-            self._sin_offset = 1 + _legacy_pad_idx
-
+        self._sin_offset = 0 if _legacy_pad_idx is None else 1 + _legacy_pad_idx
         weight = torch.empty((max_seq_len, encoding_dim), device=device, dtype=dtype)
 
         self.register_buffer("weight", weight, persistent=False)
@@ -237,11 +229,7 @@ class SinusoidalPositionEncoder(PositionEncoder):
         """:meta private:"""
         seq_len = seqs.size(1)
 
-        if not self.training and state_bag is not None:
-            start_step = state_bag.step
-        else:
-            start_step = 0
-
+        start_step = 0 if self.training or state_bag is None else state_bag.step
         return seqs + self.weight[start_step : start_step + seq_len]
 
 
@@ -296,11 +284,7 @@ class LearnedPositionEncoder(PositionEncoder):
         """:meta private:"""
         seq_len = seqs.size(1)
 
-        if not self.training and state_bag is not None:
-            start_step = state_bag.step
-        else:
-            start_step = 0
-
+        start_step = 0 if self.training or state_bag is None else state_bag.step
         steps = torch.arange(
             start_step, start_step + seq_len, device=seqs.device, dtype=torch.int64
         )
@@ -379,11 +363,7 @@ class RotaryEncoder(PositionEncoder):
         """:meta private:"""
         seq_len = seqs.size(1)
 
-        if not self.training and state_bag is not None:
-            start_step = state_bag.step
-        else:
-            start_step = 0
-
+        start_step = 0 if self.training or state_bag is None else state_bag.step
         seqs_swapped = self._swap_pairs(seqs)
 
         cos = self.cos_weight[start_step : start_step + seq_len] * seqs

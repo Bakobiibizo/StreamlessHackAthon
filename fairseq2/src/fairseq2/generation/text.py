@@ -210,12 +210,10 @@ class TextTranslator(SequenceToTextGeneratorBase):
         :param source_sentences:
             The sentences in the source language.
         """
-        indices: List[Tensor] = []
-
-        # TODO: use parallel_invoke
-        for source_sentence in source_sentences:
-            indices.append(self.source_encoder(source_sentence))
-
+        indices: List[Tensor] = [
+            self.source_encoder(source_sentence)
+            for source_sentence in source_sentences
+        ]
         batch = cast(SequenceData, self.collater(indices))
 
         return self._do_generate(

@@ -37,9 +37,9 @@ exec(open('src/sentencepiece/_version.py').read())
 
 def run_pkg_config(section, pkg_config_path=None):
   try:
-    cmd = 'pkg-config sentencepiece --{}'.format(section)
+    cmd = f'pkg-config sentencepiece --{section}'
     if pkg_config_path:
-      cmd = 'env PKG_CONFIG_PATH={} {}'.format(pkg_config_path, cmd)
+      cmd = f'env PKG_CONFIG_PATH={pkg_config_path} {cmd}'
     output = subprocess.check_output(cmd, shell=True)
     if sys.version_info >= (3, 0, 0):
       output = output.decode('utf-8')
@@ -96,23 +96,20 @@ class build_ext(_build_ext):
     else:
       cflags.append('-Wl,-strip-all')
       libs.append('-Wl,-strip-all')
-    print('## cflags={}'.format(' '.join(cflags)))
-    print('## libs={}'.format(' '.join(libs)))
+    print(f"## cflags={' '.join(cflags)}")
+    print(f"## libs={' '.join(libs)}")
     ext.extra_compile_args = cflags
     ext.extra_link_args = libs
     _build_ext.build_extension(self, ext)
 
 
 if os.name == 'nt':
-  # Must pre-install sentencepice into bundled directory.
-  arch = 'win32'
-  if sys.maxsize > 2**32:
-    arch = 'amd64'
-  if os.path.exists('..\\build\\root_{}\\lib'.format(arch)):
-    cflags = ['/std:c++17', '/MT', '/I..\\build\\root_{}\\include'.format(arch)]
+  arch = 'amd64' if sys.maxsize > 2**32 else 'win32'
+  if os.path.exists(f'..\\build\\root_{arch}\\lib'):
+    cflags = ['/std:c++17', '/MT', f'/I..\\build\\root_{arch}\\include']
     libs = [
-        '..\\build\\root_{}\\lib\\sentencepiece.lib'.format(arch),
-        '..\\build\\root_{}\\lib\\sentencepiece_train.lib'.format(arch)
+        f'..\\build\\root_{arch}\\lib\\sentencepiece.lib',
+        f'..\\build\\root_{arch}\\lib\\sentencepiece_train.lib',
     ]
   else:
     cflags = ['/std:c++17', '/MT', '/I..\\build\\root\\include']

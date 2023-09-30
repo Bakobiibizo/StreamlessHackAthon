@@ -1,7 +1,7 @@
 import gradio as gr
 
 def greet(name):
-    return "Hello " + name + "!"
+    return f"Hello {name}!"
 
 with gr.Blocks() as demo:
     gr.Markdown("### This is a couple of elements without any gr.Group. Form elements naturally group together anyway.")

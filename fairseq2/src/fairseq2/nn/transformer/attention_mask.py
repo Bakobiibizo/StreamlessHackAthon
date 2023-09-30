@@ -141,13 +141,12 @@ class ALiBiAttentionMaskGenerator:
         num_heads_log_2 = math.log2(num_heads)
         if num_heads_log_2.is_integer():
             return get_slopes_power_of_2(num_heads)
-        else:
-            closest_pow_2 = 2 ** math.floor(num_heads_log_2)
-            base_slopes = get_slopes_power_of_2(closest_pow_2)
-            num_slopes_left = num_heads - closest_pow_2
-            extra_slopes = get_slopes_power_of_2(2 * closest_pow_2, step=2)
+        closest_pow_2 = 2 ** math.floor(num_heads_log_2)
+        base_slopes = get_slopes_power_of_2(closest_pow_2)
+        num_slopes_left = num_heads - closest_pow_2
+        extra_slopes = get_slopes_power_of_2(2 * closest_pow_2, step=2)
 
-            return torch.cat([base_slopes, extra_slopes[:num_slopes_left]])
+        return torch.cat([base_slopes, extra_slopes[:num_slopes_left]])
 
     def __repr__(self) -> str:
         return "ALiBiAttentionMaskGenerator"

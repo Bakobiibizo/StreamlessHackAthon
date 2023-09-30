@@ -129,11 +129,7 @@ class TorchSDPA(SDPA):
                 self.training,
             )
 
-        if not self.training:
-            dropout_p = 0.0
-        else:
-            dropout_p = self.attn_dropout_p
-
+        dropout_p = 0.0 if not self.training else self.attn_dropout_p
         # Check if the mask is causal.
         is_causal_mask: bool = getattr(mask, "is_causal", False)
 

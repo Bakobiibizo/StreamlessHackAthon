@@ -39,7 +39,7 @@ class TestPrefetchOp:
         pipeline = read_sequence([]).prefetch(num_examples).and_return()
 
         for _ in range(2):
-            assert list(pipeline) == []
+            assert not list(pipeline)
 
             pipeline.reset()
 

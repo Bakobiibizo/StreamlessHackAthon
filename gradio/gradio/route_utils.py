@@ -47,10 +47,10 @@ class Obj:
     def __contains__(self, item) -> bool:
         if item in self.__dict__:
             return True
-        for value in self.__dict__.values():
-            if isinstance(value, Obj) and item in value:
-                return True
-        return False
+        return any(
+            isinstance(value, Obj) and item in value
+            for value in self.__dict__.values()
+        )
 
     def keys(self):
         return self.__dict__.keys()
@@ -102,22 +102,18 @@ class Request:
         self.kwargs: dict = kwargs
 
     def dict_to_obj(self, d):
-        if isinstance(d, dict):
-            return json.loads(json.dumps(d), object_hook=Obj)
-        else:
-            return d
+        return json.loads(json.dumps(d), object_hook=Obj) if isinstance(d, dict) else d
 
     def __getattr__(self, name):
         if self.request:
             return self.dict_to_obj(getattr(self.request, name))
-        else:
-            try:
-                obj = self.kwargs[name]
-            except KeyError as ke:
-                raise AttributeError(
-                    f"'Request' object has no attribute '{name}'"
-                ) from ke
-            return self.dict_to_obj(obj)
+        try:
+            obj = self.kwargs[name]
+        except KeyError as ke:
+            raise AttributeError(
+                f"'Request' object has no attribute '{name}'"
+            ) from ke
+        return self.dict_to_obj(obj)
 
 
 class FnIndexInferError(Exception):
@@ -125,14 +121,13 @@ class FnIndexInferError(Exception):
 
 
 def infer_fn_index(app: App, api_name: str, body: PredictBody) -> int:
-    if body.fn_index is None:
-        for i, fn in enumerate(app.get_blocks().dependencies):
-            if fn["api_name"] == api_name:
-                return i
-
-        raise FnIndexInferError(f"Could not infer fn_index for api_name {api_name}.")
-    else:
+    if body.fn_index is not None:
         return body.fn_index
+    for i, fn in enumerate(app.get_blocks().dependencies):
+        if fn["api_name"] == api_name:
+            return i
+
+    raise FnIndexInferError(f"Could not infer fn_index for api_name {api_name}.")
 
 
 def compile_gr_request(
@@ -152,9 +147,9 @@ def compile_gr_request(
         else:
             assert isinstance(body.request, dict)
             gr_request = Request(username=username, **body.request)
+    elif request is None:
+        raise ValueError("request must be provided if body.request is None")
     else:
-        if request is None:
-            raise ValueError("request must be provided if body.request is None")
         gr_request = Request(username=username, request=request)
 
     return gr_request

@@ -175,10 +175,13 @@ class CSVLogger(FlaggingCallback):
                     if sample is not None
                     else ""
                 )
-        csv_data.append(flag_option)
-        csv_data.append(username if username is not None else "")
-        csv_data.append(str(datetime.datetime.now()))
-
+        csv_data.extend(
+            (
+                flag_option,
+                username if username is not None else "",
+                str(datetime.datetime.now()),
+            )
+        )
         with open(log_filepath, "a", newline="", encoding="utf-8") as csvfile:
             writer = csv.writer(csvfile)
             if is_new:
@@ -332,7 +335,7 @@ class HuggingFaceDatasetSaver(FlaggingCallback):
         )
 
         # Write generic info to dataset_infos.json + upload
-        with filelock.FileLock(str(self.infos_file) + ".lock"):
+        with filelock.FileLock(f"{str(self.infos_file)}.lock"):
             if not self.infos_file.exists():
                 self.infos_file.write_text(
                     json.dumps({"flagged": {"features": features}})
@@ -394,7 +397,7 @@ class HuggingFaceDatasetSaver(FlaggingCallback):
             writer.writerow(utils.sanitize_list_for_csv(row))
 
         with data_file.open(encoding="utf-8") as csvfile:
-            return sum(1 for _ in csv.reader(csvfile)) - 1
+            return len(csv.reader(csvfile)) - 1
 
     @staticmethod
     def _save_as_jsonl(data_file: Path, headers: list[str], row: list[Any]) -> str:
@@ -441,7 +444,7 @@ class HuggingFaceDatasetSaver(FlaggingCallback):
             if isinstance(component, tuple(file_preview_types)):  # type: ignore
                 for _component, _type in file_preview_types.items():
                     if isinstance(component, _component):
-                        features[label + " file"] = {"_type": _type}
+                        features[f"{label} file"] = {"_type": _type}
                         break
                 if deserialized:
                     path_in_repo = str(  # returned filepath is absolute, we want it relative to compute URL
@@ -460,8 +463,7 @@ class HuggingFaceDatasetSaver(FlaggingCallback):
                     row.append("")
         features["flag"] = {"dtype": "string", "_type": "Value"}
         features["username"] = {"dtype": "string", "_type": "Value"}
-        row.append(flag_option)
-        row.append(username)
+        row.extend((flag_option, username))
         return features, row
 
 

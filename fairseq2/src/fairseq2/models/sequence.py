@@ -85,11 +85,10 @@ class SequenceModelOutput:
         """
         if ignore_prefix_size > 0:
             logits = self.logits[:, ignore_prefix_size:, :]
+            targets = targets[:, ignore_prefix_size:]
+
         else:
             logits = self.logits
-
-        if ignore_prefix_size > 0:
-            targets = targets[:, ignore_prefix_size:]
 
         # For numerical stability run in single precision.
         lprobs = log_softmax(logits, dim=-1, dtype=torch.float32)

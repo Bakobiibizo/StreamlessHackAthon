@@ -134,11 +134,7 @@ class ChatInterface(Blocks):
                 Markdown(description)
 
             with Column(variant="panel"):
-                if chatbot:
-                    self.chatbot = chatbot.render()
-                else:
-                    self.chatbot = Chatbot(label="Chatbot")
-
+                self.chatbot = chatbot.render() if chatbot else Chatbot(label="Chatbot")
                 with Group():
                     with Row():
                         if textbox:

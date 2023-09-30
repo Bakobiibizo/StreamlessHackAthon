@@ -30,7 +30,7 @@ class TestTakeOp:
         pipeline = read_sequence([1, 2, 3]).take(0).and_return()
 
         for _ in range(2):
-            assert list(pipeline) == []
+            assert not list(pipeline)
 
             pipeline.reset()
 

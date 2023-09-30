@@ -36,10 +36,10 @@ def test_set_get():
     assert opts.vtln_high == -100
 
     opts.debug_mel = True
-    assert opts.debug_mel is True
+    assert opts.debug_mel
 
     opts.htk_mode = True
-    assert opts.htk_mode is True
+    assert opts.htk_mode
 
 
 def test_from_empty_dict():

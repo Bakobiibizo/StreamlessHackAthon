@@ -20,8 +20,7 @@ def get_package_version():
         content = f.read()
 
     match = re.search(r"set\(KALDI_NATIVE_FBANK_VERSION (.*)\)", content)
-    latest_version = match.group(1).strip('"')
-    return latest_version
+    return match.group(1).strip('"')
 
 
 package_name = "kaldi-native-fbank"

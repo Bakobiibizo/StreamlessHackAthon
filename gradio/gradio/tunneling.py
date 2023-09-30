@@ -89,7 +89,7 @@ class Tunnel:
         )
         atexit.register(self.kill)
         url = ""
-        while url == "":
+        while not url:
             if self.proc.stdout is None:
                 continue
             line = self.proc.stdout.readline()

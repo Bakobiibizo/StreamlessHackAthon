@@ -32,7 +32,7 @@ class TestShardOp:
         pipeline = read_sequence(seq).shard(0, 5).and_return()
 
         for _ in range(2):
-            assert list(pipeline) == []
+            assert not list(pipeline)
 
             pipeline.reset()
 

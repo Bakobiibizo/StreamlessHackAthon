@@ -183,7 +183,7 @@ class AdamW(OptimizerBase):
 
             # Cast parameters back to fp16/bf16.
             for p, fp32_p in zip(params_with_grad, fp32_params_with_grad):
-                if p.dtype == torch.float16 or p.dtype == torch.bfloat16:
+                if p.dtype in [torch.float16, torch.bfloat16]:
                     p.copy_(fp32_p)
 
     def _init_param(
@@ -209,7 +209,7 @@ class AdamW(OptimizerBase):
         params_with_grad.append(param)
 
         # fp32 parameter
-        if param.dtype == torch.float16 or param.dtype == torch.bfloat16:
+        if param.dtype in [torch.float16, torch.bfloat16]:
             fp32_param = param.float()
         else:
             fp32_param = param
@@ -217,7 +217,7 @@ class AdamW(OptimizerBase):
         fp32_params_with_grad.append(fp32_param)
 
         # fp32 grad
-        if grad.dtype == torch.float16 or grad.dtype == torch.bfloat16:
+        if grad.dtype in [torch.float16, torch.bfloat16]:
             fp32_grads.append(grad.float())
         else:
             fp32_grads.append(grad)

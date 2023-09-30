@@ -103,11 +103,7 @@ class install_cmake(Command):
     def get_outputs(self) -> List[str]:
         outputs = []
 
-        if self.bundle_lib:
-            manifests = ["install_manifest.txt"]
-        else:
-            manifests = []
-
+        manifests = ["install_manifest.txt"] if self.bundle_lib else []
         manifests.append("install_manifest_python.txt")
 
         # We have to strip the file paths to the install directory to be
@@ -162,12 +158,7 @@ setup(
     zip_safe=False,
     python_requires=">=3.8",
     install_requires=[
-        # We use the tbb package as a fallback in case the system does not
-        # provide Intel oneTBB.
         "tbb>=2021.8,<2021.10;platform_machine=='x86_64'",
-        # PyTorch has no ABI compatibility between releases; this means we have
-        # to ensure that we depend on the exact same version that we used to
-        # build our extension module.
-        "torch==" + version.parse(torch.__version__).public,
+        f"torch=={version.parse(torch.__version__).public}",
     ],
 )

@@ -69,7 +69,7 @@ def _load_sndfile() -> None:
 def _load_shared_library(lib_name: str) -> Optional[CDLL]:
     # In Conda environments, we always expect native libraries to be part of the
     # environment, so we skip the default lookup rules of the dynamic linker.
-    if not "CONDA_PREFIX" in environ:
+    if "CONDA_PREFIX" not in environ:
         try:
             # Use the global namespace to ensure that all modules use the same
             # library instance.
@@ -85,11 +85,7 @@ def _load_shared_library(lib_name: str) -> Optional[CDLL]:
                 except OSError:
                     pass
 
-    if site.ENABLE_USER_SITE:
-        site_packages = [site.getusersitepackages()]
-    else:
-        site_packages = []
-
+    site_packages = [site.getusersitepackages()] if site.ENABLE_USER_SITE else []
     site_packages += site.getsitepackages()
 
     # If the system does not have the library, try to load it from the site

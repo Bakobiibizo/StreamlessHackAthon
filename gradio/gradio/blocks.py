@@ -229,11 +229,10 @@ class Block:
 
         if isinstance(outputs, set):
             outputs = sorted(outputs, key=lambda x: x._id)
-        else:
-            if outputs is None:
-                outputs = []
-            elif not isinstance(outputs, list):
-                outputs = [outputs]
+        elif outputs is None:
+            outputs = []
+        elif not isinstance(outputs, list):
+            outputs = [outputs]
 
         if fn is not None and not cancels:
             check_function_inputs_match(fn, inputs, inputs_as_dict)
@@ -250,10 +249,11 @@ class Block:
                 "Either batch is True or every is non-zero but not both."
             )
 
-        if every and fn:
-            fn = get_continuous_fn(fn, every)
-        elif every:
-            raise ValueError("Cannot set a value for `every` without a `fn`.")
+        if every:
+            if fn:
+                fn = get_continuous_fn(fn, every)
+            else:
+                raise ValueError("Cannot set a value for `every` without a `fn`.")
 
         _, progress_index, event_data_index = (
             special_args(fn) if fn else (None, None, None)
@@ -323,8 +323,7 @@ class Block:
     def get_specific_update(cls, generic_update: dict[str, Any]) -> dict:
         generic_update = generic_update.copy()
         del generic_update["__type__"]
-        specific_update = cls.update(**generic_update)
-        return specific_update
+        return cls.update(**generic_update)
 
 
 class BlockContext(Block):
@@ -618,12 +617,10 @@ def get_api_info(config: dict, serialize: bool = True):
         if dependency["api_name"] is not None and dependency["api_name"] is not False:
             api_info["named_endpoints"][f"/{dependency['api_name']}"] = dependency_info
         elif (
-            dependency["api_name"] is False
-            or mode == "interface"
-            or mode == "tabbed_interface"
+            dependency["api_name"] is not False
+            and mode != "interface"
+            and mode != "tabbed_interface"
         ):
-            pass  # Skip unnamed endpoints in interface mode
-        else:
             api_info["unnamed_endpoints"][str(d)] = dependency_info
 
     return api_info
@@ -707,8 +704,7 @@ class Blocks(BlockContext):
         self.pending_streams = defaultdict(dict)
         self.show_error = True
         if css is not None and os.path.exists(css):
-            with open(css) as css_file:
-                self.css = css_file.read()
+            self.css = Path(css).read_text()
         else:
             self.css = css
 
@@ -762,8 +758,8 @@ class Blocks(BlockContext):
         self.root_urls = set()
 
         if self.analytics_enabled:
-            is_custom_theme = not any(
-                self.theme.to_dict() == built_in_theme.to_dict()
+            is_custom_theme = all(
+                self.theme.to_dict() != built_in_theme.to_dict()
                 for built_in_theme in BUILT_IN_THEMES.values()
             )
             data = {
@@ -1406,7 +1402,7 @@ Received outputs:
                 block_fn.fn
             ):
                 raise ValueError("Gradio does not support generators in batch mode.")
-            if not all(x == batch_size for x in batch_sizes):
+            if any(x != batch_size for x in batch_sizes):
                 raise ValueError(
                     f"All inputs to a batch function must have the same length but instead have sizes: {batch_sizes}."
                 )
@@ -1429,10 +1425,7 @@ Received outputs:
             is_generating, iterator = None, None
         else:
             old_iterator = iterators.get(fn_index, None) if iterators else None
-            if old_iterator:
-                inputs = []
-            else:
-                inputs = self.preprocess_data(fn_index, inputs, state)
+            inputs = [] if old_iterator else self.preprocess_data(fn_index, inputs, state)
             was_generating = old_iterator is not None
             result = await self.call_function(
                 fn_index, inputs, old_iterator, request, event_id, event_data

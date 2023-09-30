@@ -244,7 +244,7 @@ class PolynomialDecayLR(LRSchedulerBase):
     def _compute_lrs(self) -> List[float]:
         # The decay is already complete, return the final learning rate.
         if self.last_epoch >= self.num_steps:
-            return [f for f in self.final_lrs]
+            return list(self.final_lrs)
 
         # Linearly increase the learning rate to its base value during warmup.
         if self.last_epoch <= self.num_warmup_steps:

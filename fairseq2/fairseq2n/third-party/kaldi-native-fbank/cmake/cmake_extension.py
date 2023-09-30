@@ -32,12 +32,7 @@ try:
             _bdist_wheel.finalize_options(self)
             # In this case, the generated wheel has a name in the form
             # kaldifeat-xxx-pyxx-none-any.whl
-            if is_for_pypi() and not is_macos():
-                self.root_is_pure = True
-            else:
-                # The generated wheel has a name ending with
-                # -linux_x86_64.whl
-                self.root_is_pure = False
+            self.root_is_pure = bool(is_for_pypi() and not is_macos())
 
 
 except ImportError:

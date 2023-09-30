@@ -41,7 +41,7 @@ class TestDataPipeline:
 
     def test_next_works_when_error_is_recoverable(self) -> None:
         def fn(d: int) -> bool:
-            if d == 2 or d == 4:
+            if d in {2, 4}:
                 # Errors caused by the filter callable are always treated as
                 # recoverable.
                 raise ValueError("foo")
@@ -70,7 +70,7 @@ class TestDataPipeline:
         self,
     ) -> None:
         def fn(d: int) -> bool:
-            if d == 3 or d == 5:
+            if d in {3, 5}:
                 raise ValueError("foo")
 
             return True

@@ -43,8 +43,7 @@ with gr.Blocks() as demo:
                 chunk_size = 20_000
                 with open(audio_file, "rb") as f:
                     while True:
-                        chunk = f.read(chunk_size)
-                        if chunk:
+                        if chunk := f.read(chunk_size):
                             yield chunk
                             sleep(1)
                         else:

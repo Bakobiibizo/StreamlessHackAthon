@@ -31,11 +31,10 @@ issues = (issue for page in issues_pages for issue in page)
 missing = []
 
 for issue in issues:
-    changelog = ENTRY.findall(issue.body)
-    if changelog:
+    if changelog := ENTRY.findall(issue.body):
         (msg,) = changelog
         if not msg.startswith("* "):
-            msg = "* " + msg
+            msg = f"* {msg}"
         if not msg.endswith("."):
             msg += "."
 

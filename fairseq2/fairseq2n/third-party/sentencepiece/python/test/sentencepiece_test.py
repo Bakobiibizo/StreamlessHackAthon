@@ -24,11 +24,9 @@ import pickle
 
 from collections import defaultdict
 
-print('VERSION={}'.format(spm.__version__))
+print(f'VERSION={spm.__version__}')
 
-data_dir = 'test'
-if sys.platform == 'win32':
-  data_dir = os.path.join('..', 'data')
+data_dir = os.path.join('..', 'data') if sys.platform == 'win32' else 'test'
 
 
 class TestSentencepieceProcessor(unittest.TestCase):
@@ -80,7 +78,7 @@ class TestSentencepieceProcessor(unittest.TestCase):
     self.assertEqual(pieces1, pieces2)
     self.assertEqual(text, self.sp_.DecodePieces(pieces1))
     self.assertEqual(text, self.sp_.DecodeIds(ids))
-    for n in range(100):
+    for _ in range(100):
       self.assertEqual(
           text,
           self.sp_.DecodePieces(self.sp_.SampleEncodeAsPieces(text, 64, 0.5)))
@@ -100,7 +98,7 @@ class TestSentencepieceProcessor(unittest.TestCase):
     self.assertEqual(ids, ids2)
     self.assertEqual(text, self.sp_.decode_pieces(pieces3))
     self.assertEqual(text, self.sp_.decode_ids(ids2))
-    for n in range(100):
+    for _ in range(100):
       self.assertEqual(
           text,
           self.sp_.decode_pieces(
@@ -151,7 +149,7 @@ class TestSentencepieceProcessor(unittest.TestCase):
     self.assertEqual(pieces1, pieces2)
     self.assertEqual(text, self.jasp_.DecodePieces(pieces1))
     self.assertEqual(text, self.jasp_.DecodeIds(ids))
-    for n in range(100):
+    for _ in range(100):
       self.assertEqual(
           text,
           self.jasp_.DecodePieces(
@@ -169,7 +167,7 @@ class TestSentencepieceProcessor(unittest.TestCase):
     self.assertEqual(ids, ids2)
     self.assertEqual(text, self.jasp_.decode_pieces(pieces1))
     self.assertEqual(text, self.jasp_.decode_ids(ids2))
-    for n in range(100):
+    for _ in range(100):
       self.assertEqual(
           text,
           self.jasp_.decode_pieces(
@@ -376,14 +374,10 @@ class TestSentencepieceProcessor(unittest.TestCase):
     surfaces2 = [x.surface for x in s1.pieces]
     self.assertEqual(surfaces1, surfaces2)
 
-    ids = []
-    for i in range(len(s1.pieces)):
-      ids.append(s1.pieces[i].id)
+    ids = [s1.pieces[i].id for i in range(len(s1.pieces))]
     self.assertEqual(ids, v1)
 
-    pieces = []
-    for i in range(len(s1.pieces)):
-      pieces.append(s1.pieces[i].piece)
+    pieces = [s1.pieces[i].piece for i in range(len(s1.pieces))]
     self.assertEqual(pieces, v2)
 
     for v in s3.nbests:
@@ -525,7 +519,7 @@ class TestSentencepieceProcessor(unittest.TestCase):
 
     for out_type in [str, int, 'serialized_proto', 'immutable_proto']:
       ids = defaultdict(int)
-      for n in range(100):
+      for _ in range(100):
         out = sp.encode('hello world', out_type=out_type, enable_sampling=True)
         if type(out) is list:
           out = tuple(out)
@@ -533,7 +527,7 @@ class TestSentencepieceProcessor(unittest.TestCase):
       self.assertGreater(len(ids), 1)
 
       ids2 = defaultdict(int)
-      for n in range(100):
+      for _ in range(100):
         out = sp.encode('hello world', out_type=out_type, enable_sampling=False)
         if type(out) is list:
           out = tuple(out)

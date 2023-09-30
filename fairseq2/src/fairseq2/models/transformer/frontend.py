@@ -120,16 +120,16 @@ class TransformerEmbeddingFrontend(TransformerFrontend):
 
         self.scale = 1.0 if no_scale else math.sqrt(model_dim)
 
-        if pos_encoder is not None:
-            if pos_encoder.encoding_dim != model_dim:
-                raise ValueError(
-                    f"`encoding_dim` of `pos_encoder` and `embedding_dim` of `embed` must be equal, but are {pos_encoder.encoding_dim} and {model_dim} instead."
-                )
-
-            self.pos_encoder = pos_encoder
-        else:
+        if pos_encoder is None:
             self.register_module("pos_encoder", None)
 
+        elif pos_encoder.encoding_dim != model_dim:
+            raise ValueError(
+                f"`encoding_dim` of `pos_encoder` and `embedding_dim` of `embed` must be equal, but are {pos_encoder.encoding_dim} and {model_dim} instead."
+            )
+
+        else:
+            self.pos_encoder = pos_encoder
         if layer_norm:
             self.layer_norm = layer_norm_fn(model_dim, device, dtype)
         else:
@@ -169,4 +169,4 @@ class TransformerEmbeddingFrontend(TransformerFrontend):
         """:meta private:"""
         s = super().extra_repr()
 
-        return s + ", no_scale=False" if self.scale != 1.0 else ""
+        return f"{s}, no_scale=False" if self.scale != 1.0 else ""

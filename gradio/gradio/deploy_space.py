@@ -19,16 +19,13 @@ def add_configuration_to_readme(
     title: str | None,
     app_file: str | None,
 ) -> dict:
-    configuration = {}
-
     dir_name = os.path.basename(repo_directory)
     if title is None:
         title = input(f"Enter Spaces app title [{dir_name}]: ") or dir_name
     formatted_title = format_title(title)
     if formatted_title != title:
         print(f"Formatted to {formatted_title}. ")
-    configuration["title"] = formatted_title
-
+    configuration = {"title": formatted_title}
     if app_file is None:
         for file in os.listdir(repo_directory):
             file_path = os.path.join(repo_directory, file)

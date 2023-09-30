@@ -117,11 +117,10 @@ class TestZipOp:
         pipeline = DataPipeline.zip([pipeline1, pipeline2, pipeline3]).and_return()
 
         with pytest.raises(
-            DataPipelineError,
-            match=r"^The zipped data pipelines must all have the same length, but the data pipelines at the following indices have more examples than the others\. Indices: 1, 2$",
-        ):
-            for d in pipeline:
-                pass
+                DataPipelineError,
+                match=r"^The zipped data pipelines must all have the same length, but the data pipelines at the following indices have more examples than the others\. Indices: 1, 2$",
+            ):
+            pass
 
     def test_op_raises_error_when_the_number_of_pipelines_and_names_do_not_match(
         self,

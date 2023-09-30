@@ -57,28 +57,28 @@ class S2TTransformerFrontend(TransformerFrontend):
         """
         super().__init__(model_dim)
 
-        if feature_extractor is not None:
-            if feature_extractor.feature_dim != model_dim:
-                raise ValueError(
-                    f"`feature_dim` of `feature_extractor` must be equal to `model_dim` ({model_dim}), but is {feature_extractor.feature_dim} instead."
-                )
-
-            self.feature_extractor = feature_extractor
-        else:
+        if feature_extractor is None:
             self.register_module("feature_extractor", None)
 
+        elif feature_extractor.feature_dim != model_dim:
+            raise ValueError(
+                f"`feature_dim` of `feature_extractor` must be equal to `model_dim` ({model_dim}), but is {feature_extractor.feature_dim} instead."
+            )
+
+        else:
+            self.feature_extractor = feature_extractor
         self.scale = math.sqrt(model_dim)
 
-        if pos_encoder is not None:
-            if pos_encoder.encoding_dim != model_dim:
-                raise ValueError(
-                    f"`encoding_dim` of `pos_encoder` must be equal to `model_dim` ({model_dim}), but is {pos_encoder.encoding_dim} instead."
-                )
-
-            self.pos_encoder = pos_encoder
-        else:
+        if pos_encoder is None:
             self.register_module("pos_encoder", None)
 
+        elif pos_encoder.encoding_dim != model_dim:
+            raise ValueError(
+                f"`encoding_dim` of `pos_encoder` must be equal to `model_dim` ({model_dim}), but is {pos_encoder.encoding_dim} instead."
+            )
+
+        else:
+            self.pos_encoder = pos_encoder
         if proj:
             self.proj = Linear(
                 model_dim, model_dim, bias=True, device=device, dtype=dtype

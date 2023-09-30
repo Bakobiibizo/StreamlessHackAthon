@@ -324,8 +324,7 @@ def test_accessors():
 
 
 def test_accessor_moves():
-    inc_refs = m.accessor_moves()
-    if inc_refs:
+    if inc_refs := m.accessor_moves():
         assert inc_refs == [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0]
     else:
         pytest.skip("Not defined: PYBIND11_HANDLE_REF_DEBUG")
@@ -403,7 +402,7 @@ def test_pybind11_str_raw_str():
     assert cvt({}) == "{}"
     assert cvt({3: 4}) == "{3: 4}"
     assert cvt(set()) == "set()"
-    assert cvt({3, 3}) == "{3}"
+    assert cvt({3}) == "{3}"
 
     valid_orig = "Ǳ"
     valid_utf8 = valid_orig.encode("utf-8")
@@ -579,13 +578,13 @@ def test_memoryview_from_memory():
 
 
 def test_builtin_functions():
-    assert m.get_len([i for i in range(42)]) == 42
+    assert m.get_len(list(range(42))) == 42
     with pytest.raises(TypeError) as exc_info:
-        m.get_len(i for i in range(42))
-    assert str(exc_info.value) in [
+        m.get_len(iter(range(42)))
+    assert str(exc_info.value) in {
         "object of type 'generator' has no len()",
         "'generator' has no length",
-    ]  # PyPy
+    }
 
 
 def test_isinstance_string_types():
@@ -667,6 +666,7 @@ def test_weakref(create_weakref, create_weakref_with_callback):
     ],
 )
 def test_weakref_err(create_weakref, has_callback):
+
     class C:
         __slots__ = []
 
@@ -676,10 +676,7 @@ def test_weakref_err(create_weakref, has_callback):
     ob = C()
     # Should raise TypeError on CPython
     with pytest.raises(TypeError) if not env.PYPY else contextlib.nullcontext():
-        if has_callback:
-            _ = create_weakref(ob, callback)
-        else:
-            _ = create_weakref(ob)
+        _ = create_weakref(ob, callback) if has_callback else create_weakref(ob)
 
 
 def test_cpp_iterators():

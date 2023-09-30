@@ -46,7 +46,7 @@ class S2TTransformerTokenizer(TextTokenizer):
         :param default_target_lang:
             The fall-back language if no target language is specified.
         """
-        if task != "transcription" and task != "translation":
+        if task not in ["transcription", "translation"]:
             raise ValueError(
                 f"`task` must be 'transcripton' or 'translation', but is '{task}' instead."
             )

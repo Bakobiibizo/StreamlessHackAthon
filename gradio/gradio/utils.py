@@ -261,9 +261,7 @@ def ipython_check() -> bool:
 
 
 def get_space() -> str | None:
-    if os.getenv("SYSTEM") == "spaces":
-        return os.getenv("SPACE_ID")
-    return None
+    return os.getenv("SPACE_ID") if os.getenv("SYSTEM") == "spaces" else None
 
 
 def is_zero_gpu_space() -> bool:
@@ -370,7 +368,7 @@ def assert_configs_are_equivalent_besides_ids(
 
 
 def format_ner_list(input_string: str, ner_groups: list[dict[str, str | int]]):
-    if len(ner_groups) == 0:
+    if not ner_groups:
         return [(input_string, None)]
 
     output = []
@@ -379,8 +377,12 @@ def format_ner_list(input_string: str, ner_groups: list[dict[str, str | int]]):
 
     for group in ner_groups:
         entity, start, end = group["entity_group"], group["start"], group["end"]
-        output.append((input_string[prev_end:start], None))
-        output.append((input_string[start:end], entity))
+        output.extend(
+            (
+                (input_string[prev_end:start], None),
+                (input_string[start:end], entity),
+            )
+        )
         prev_end = end
 
     output.append((input_string[end:], None))
@@ -400,10 +402,7 @@ def delete_none(_dict: dict, skip_value: bool = False) -> dict:
 
 
 def resolve_singleton(_list: list[Any] | Any) -> Any:
-    if len(_list) == 1:
-        return _list[0]
-    else:
-        return _list
+    return _list[0] if len(_list) == 1 else _list
 
 
 def component_or_layout_class(cls_name: str) -> type[Component] | type[BlockContext]:
@@ -539,10 +538,9 @@ def sanitize_list_for_csv(values: list[Any]) -> list[Any]:
     for value in values:
         if isinstance(value, list):
             sanitized_value = [sanitize_value_for_csv(v) for v in value]
-            sanitized_values.append(sanitized_value)
         else:
             sanitized_value = sanitize_value_for_csv(value)
-            sanitized_values.append(sanitized_value)
+        sanitized_values.append(sanitized_value)
     return sanitized_values
 
 
@@ -551,13 +549,12 @@ def append_unique_suffix(name: str, list_of_names: list[str]):
     set_of_names: set[str] = set(list_of_names)  # for O(1) lookup
     if name not in set_of_names:
         return name
-    else:
-        suffix_counter = 1
+    suffix_counter = 1
+    new_name = f"{name}_{suffix_counter}"
+    while new_name in set_of_names:
+        suffix_counter += 1
         new_name = f"{name}_{suffix_counter}"
-        while new_name in set_of_names:
-            suffix_counter += 1
-            new_name = f"{name}_{suffix_counter}"
-        return new_name
+    return new_name
 
 
 def validate_url(possible_url: str) -> bool:
@@ -565,7 +562,7 @@ def validate_url(possible_url: str) -> bool:
     try:
         head_request = requests.head(possible_url, headers=headers)
         # some URLs, such as AWS S3 presigned URLs, return a 405 or a 403 for HEAD requests
-        if head_request.status_code == 405 or head_request.status_code == 403:
+        if head_request.status_code in {405, 403}:
             return requests.get(possible_url, headers=headers).ok
         return head_request.ok
     except Exception:
@@ -846,8 +843,7 @@ def tex2svg(formula, *args):
         svg_code = xml_code[svg_start:]
         svg_code = re.sub(r"<metadata>.*<\/metadata>", "", svg_code, flags=re.DOTALL)
         svg_code = re.sub(r' width="[^"]+"', "", svg_code)
-        height_match = re.search(r'height="([\d.]+)pt"', svg_code)
-        if height_match:
+        if height_match := re.search(r'height="([\d.]+)pt"', svg_code):
             height = float(height_match.group(1))
             new_height = height / fontsize  # conversion from pt to em
             svg_code = re.sub(
